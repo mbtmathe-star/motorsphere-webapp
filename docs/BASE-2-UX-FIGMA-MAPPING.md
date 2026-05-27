@@ -1904,7 +1904,8 @@ Use page-level skeleton for:
 [ ] firestore.rules placeholder created
 [ ] storage.rules placeholder created
 [ ] firestore.indexes.json placeholder created
-[ ] apphosting.yaml created with minInstances, maxInstances config
+[ ] netlify.toml created with build command, publish dir, and @netlify/plugin-nextjs
+[ ] apphosting.yaml created (deferred alternative — Netlify is the active hosting provider)
 ```
 
 ### 16.3 Prettier & Git Hooks
@@ -1973,20 +1974,23 @@ Use page-level skeleton for:
 [ ] README badge showing CI status
 ```
 
-### 16.8 Firebase App Hosting Setup
+### 16.8 Netlify Deployment Setup
 
 ```
 [ ] Firebase CLI installed globally: npm install -g firebase-tools
 [ ] Firebase login: firebase login
-[ ] Firebase App Hosting backend created in Firebase Console for motorsphere-staging project
-[ ] GitHub repository connected to Firebase App Hosting
-[ ] Automatic deployments enabled: main branch → production-equivalent preview
-[ ] apphosting.yaml committed with minInstances: 0, maxInstances: 10
-[ ] Environment variable placeholders added in Firebase App Hosting console
-    (values TBD — add placeholder strings until Firebase projects are configured in Base 3)
-[ ] Custom domain motorsphere.co.za added to Firebase App Hosting (DNS not required yet)
 [ ] Firebase Emulator Suite confirmed working: firebase emulators:start
+[ ] Netlify site created and linked to GitHub repository
+[ ] Build settings confirmed in Netlify: command = npm run build, publish = .next
+[ ] netlify.toml committed (build config + @netlify/plugin-nextjs)
+[ ] @netlify/plugin-nextjs installed in devDependencies: npm install -D @netlify/plugin-nextjs
+[ ] Environment variable placeholders added in Netlify Dashboard → Site → Environment variables
+    (real values added when Firebase projects are configured in Base 3)
+[ ] Preview deployments enabled: Netlify auto-deploys any PR to a preview URL
+[ ] First deploy confirmed working (Netlify build log shows no errors)
 ```
+
+> **Firebase App Hosting** is configured in `apphosting.yaml` (committed) but deferred. Activate it at Base 8 if the team decides to replace Netlify with Firebase-native hosting.
 
 ### 16.9 Component Shells for Design Verification
 

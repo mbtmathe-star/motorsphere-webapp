@@ -11,10 +11,10 @@
 >
 > **Original stack:** Supabase (PostgreSQL + Auth + Storage + RLS + Edge Functions)
 >
-> **New stack:** Firebase (Firebase Auth + Cloud Firestore + Firebase Storage + Security Rules + Cloud Functions + Firebase App Hosting)
+> **New stack:** Firebase (Firebase Auth + Cloud Firestore + Firebase Storage + Security Rules + Cloud Functions) + Netlify (hosting/deployment)
 >
 > **Why the change:**
-> The team chose Firebase as the backend platform on the Blaze (pay-as-you-go) plan. Firebase provides a tightly integrated, Google-managed ecosystem — Auth, Firestore, Storage, Security Rules, Cloud Functions, and App Hosting all work together natively and share a single Firebase project config. The Firebase SDK is first-class in Next.js, the Admin SDK is mature, and the Firebase Emulator Suite enables full offline-local development without Docker.
+> The team chose Firebase as the backend platform on the Blaze (pay-as-you-go) plan. Firebase provides a tightly integrated, Google-managed ecosystem — Auth, Firestore, Storage, Security Rules, Cloud Functions — all working together natively under a single Firebase project config. The Firebase SDK is first-class in Next.js, the Admin SDK is mature, and the Firebase Emulator Suite enables full offline-local development without Docker. Netlify hosts the Next.js app with GitHub-based auto-deploys and preview deployments.
 >
 > **Architectural consequence:**
 > This is no longer a relational Postgres/RLS app. The data layer is **Cloud Firestore** — a NoSQL document database. All schema planning has been reworked as Firestore collections, document shapes, composite indexes, and Security Rules. Cloud Functions replaces Supabase Edge Functions for backend logic and email triggers. Firebase Storage handles all file uploads. All Supabase-specific references in this document have been replaced.
@@ -549,10 +549,10 @@ shadcn/ui uses CSS variables for theming. The Figma design tokens should be mapp
 
 | Layer | Technology | Rationale |
 |---|---|---|
-| **App Hosting** | Firebase App Hosting | Native Next.js SSR support (App Router), auto-scaling, CDN, GitHub integration, managed SSL, same Firebase project. Deployment deferred until app is ready. |
+| **App Hosting** | Netlify | Next.js SSR hosting via `@netlify/plugin-nextjs`. GitHub-based auto-deploy, preview deploys on PRs, managed SSL. Firebase App Hosting kept as a deferred alternative. |
 | **Database / Auth / Storage** | Firebase (single project) | All Firebase services share one project config — one set of credentials, unified Security Rules, one console |
 | **Backend Logic** | Cloud Functions (2nd gen) | Collocated with Firebase project; triggered by Firestore/Auth events; no separate infrastructure needed. Deferred until needed. |
-| **Version Control** | GitHub | CI/CD via GitHub Actions; Firebase App Hosting auto-deploys from `main` |
+| **Version Control** | GitHub | CI/CD via GitHub Actions; Netlify auto-deploys from `main` |
 | **AI Development** | Claude Code | AI-assisted development within the project; documented in `CLAUDE.md` |
 
 ### Dev Tooling
@@ -1137,42 +1137,40 @@ firebase emulators:start --import=./emulator-data
 
 ---
 
-### 11.9 Firebase App Hosting Deployment Plan
+### 11.9 Netlify Deployment Plan
 
-Firebase App Hosting (GA 2024) provides native Next.js App Router support with SSR, auto-scaling, CDN, and managed SSL.
+Netlify is the active hosting provider for MotorSphere. Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Netlify handles hosting the Next.js app with GitHub-based auto-deploys and preview deployments.
 
-**`apphosting.yaml` config:**
-```yaml
-runConfig:
-  minInstances: 0     # scale to zero when idle
-  maxInstances: 10    # cap for cost control during MVP
-  concurrency: 80
+> **Firebase App Hosting** is configured in `apphosting.yaml` (committed) but deferred as an alternative. It can be activated at Base 8 if the team decides to move to a fully-Firebase deployment stack.
 
-env:
-  - variable: NEXT_PUBLIC_APP_ENV
-    value: production
-  # Secrets managed in Firebase Secret Manager:
-  - variable: RESEND_API_KEY
-    secret: RESEND_API_KEY
-  - variable: FIREBASE_ADMIN_PRIVATE_KEY
-    secret: FIREBASE_ADMIN_PRIVATE_KEY
+**`netlify.toml` config:**
+```toml
+[build]
+  command   = "npm run build"
+  publish   = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 ```
 
 **Deployment environments:**
 
-| Environment | Firebase Project | Branch | Purpose |
-|---|---|---|---|
-| **Local** | Emulator Suite | feature/* branches | Development, Security Rules testing |
-| **Preview** | `motorsphere-staging` project | Any PR to `main` | PR review; staging Firestore, real Firebase Auth |
-| **Production** | `motorsphere-prod` project | `main` | Live platform |
+| Environment | Hosting | Firebase Project | Branch | Purpose |
+|---|---|---|---|---|
+| **Local** | Firebase Emulator Suite | — (local only) | feature/* branches | Development, Security Rules testing |
+| **Preview** | Netlify preview URL | `motorsphere-staging` | Any PR to `main` | PR review; staging Firebase, preview URL |
+| **Production** | Netlify (motorsphere.co.za) | `motorsphere-prod` | `main` | Live platform |
 
-> **Two Firebase projects:** Staging and production are separate Firebase projects — separate Firestore databases, separate Storage buckets, separate Auth users. This is the Firebase equivalent of separate Supabase projects and is strongly recommended to prevent accidental data exposure.
+> **Two Firebase projects:** Staging and production are separate Firebase projects — separate Firestore databases, separate Storage buckets, separate Auth users. Prevents accidental data exposure.
 
-**GitHub → Firebase App Hosting auto-deploy:**
-- Firebase App Hosting connects directly to GitHub repository
+**GitHub → Netlify auto-deploy:**
+- Netlify connects directly to the GitHub repository
 - Push to `main` → automatic production deploy
-- PR branches → automatic preview deploy with unique URL
-- No GitHub Actions step needed for deployment (Firebase handles it)
+- Open PR → automatic preview deploy with unique URL (e.g. `https://deploy-preview-42--motorsphere.netlify.app`)
+- No GitHub Actions deploy step needed (Netlify handles it)
 - GitHub Actions still runs lint, type-check, and build verification
 
 ---
@@ -1303,7 +1301,7 @@ Key obligations:
 #### Privacy Policy Requirements
 The Privacy Policy page must cover (in plain English):
 - What data is collected and why
-- How data is stored and protected (Firebase/Google Cloud, Firebase App Hosting, Resend)
+- How data is stored and protected (Firebase/Google Cloud, Netlify, Resend)
 - How long data is retained
 - User rights under POPIA
 - Contact details for the Information Officer
@@ -1314,7 +1312,7 @@ The Privacy Policy page must cover (in plain English):
 
 | Measure | Implementation |
 |---|---|
-| HTTPS everywhere | Firebase App Hosting enforces HTTPS; HSTS headers configured |
+| HTTPS everywhere | Netlify enforces HTTPS on all deployments; HSTS headers configured |
 | Auth tokens | Firebase ID token → httpOnly session cookie via `/api/auth/session`; never stored in localStorage |
 | Security Rules at DB layer | All Firestore collections and Storage paths protected by Firebase Security Rules (enforced server-side, cannot be bypassed) |
 | Custom claims for roles | Admin roles enforced in Security Rules via `request.auth.token.role` — not just in application code |
@@ -1324,7 +1322,7 @@ The Privacy Policy page must cover (in plain English):
 | Rate limiting | Firebase App Check (Phase 2) + Next.js middleware for API routes + Cloud Function rate checks |
 | File upload validation | Type and size checks in Firebase Storage Security Rules + Cloud Function validation |
 | Admin routes | Protected by `proxy.ts` — verifies session cookie + checks `role` custom claim via Admin SDK |
-| Environment variables | All secrets in Firebase Secret Manager (functions) and Firebase App Hosting env config; never in codebase |
+| Environment variables | All secrets in Netlify Dashboard → Environment variables (server-side only); Cloud Functions use Firebase Secret Manager; never committed to codebase |
 | Dependency scanning | GitHub Dependabot + periodic `npm audit` |
 
 ---
@@ -1334,7 +1332,7 @@ The Privacy Policy page must cover (in plain English):
 ```typescript
 // To be configured in Base 3 — next.config.ts
 // To be configured in Base 3 — next.config.ts
-// Note: Firebase App Hosting supports custom headers via apphosting.yaml or next.config.ts
+// Note: Security headers can be set in next.config.ts or Netlify _headers file
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -1353,11 +1351,11 @@ const securityHeaders = [
 
 ### 13.1 Environment Strategy
 
-| Environment | App Hosting | Firebase Project | Branch | Purpose |
+| Environment | Hosting | Firebase Project | Branch | Purpose |
 |---|---|---|---|---|
 | **Local Development** | Firebase Emulator Suite | — (local only) | feature/* branches | Full offline development |
-| **Preview / Staging** | Firebase App Hosting | `motorsphere-staging` | Any PR to `main` | PR review, stakeholder sign-off, staging data |
-| **Production** | Firebase App Hosting | `motorsphere-prod` | `main` | Live platform, real user data |
+| **Preview / Staging** | Netlify preview URL | `motorsphere-staging` | Any PR to `main` | PR review, stakeholder sign-off, staging data |
+| **Production** | Netlify (motorsphere.co.za) | `motorsphere-prod` | `main` | Live platform, real user data |
 
 > **Rule:** Nothing goes to production without a PR review and passing CI checks. Two separate Firebase projects for staging vs production — they do not share any data or credentials.
 
@@ -1386,7 +1384,8 @@ firebase.json           ← hosting, functions, emulator, rules config
 firestore.rules         ← Firestore Security Rules
 firestore.indexes.json  ← Composite indexes
 storage.rules           ← Firebase Storage Security Rules
-apphosting.yaml         ← Firebase App Hosting config
+netlify.toml            ← Netlify deployment config (active hosting)
+apphosting.yaml         ← Firebase App Hosting config (deferred alternative)
 functions/              ← Cloud Functions source
 ```
 
@@ -1405,7 +1404,7 @@ functions/              ← Cloud Functions source
 
 ### 13.3 CI/CD Pipeline (GitHub Actions)
 
-Firebase App Hosting handles deployment automatically from GitHub. GitHub Actions handles quality gates.
+Netlify handles deployment automatically from GitHub. GitHub Actions handles quality gates.
 
 **On Pull Request (`ci.yml`):**
 ```
@@ -1413,13 +1412,13 @@ Firebase App Hosting handles deployment automatically from GitHub. GitHub Action
 2. TypeScript type check (tsc --noEmit)
 3. ESLint (npm run lint)
 4. Build check (npm run build)
-5. Firebase App Hosting auto-creates preview deployment for the PR
+5. Netlify auto-creates a preview deployment for the PR
 ```
 
 **On merge to `main`:**
 ```
 1. All CI checks must pass (enforced by branch protection)
-2. Firebase App Hosting auto-deploys to production (motorsphere-prod)
+2. Netlify auto-deploys to production
 3. Cloud Functions deployed: firebase deploy --only functions --project prod
 4. Security Rules deployed: firebase deploy --only firestore:rules,storage --project prod
 5. Firestore indexes deployed: firebase deploy --only firestore:indexes --project prod
@@ -1435,10 +1434,10 @@ Full variable list: see Section 11.10. Summary of where variables are managed:
 
 | Variable Type | Where Stored |
 |---|---|
-| Firebase client config (`NEXT_PUBLIC_FIREBASE_*`) | Firebase App Hosting environment config |
-| Firebase Admin SDK private key | Firebase Secret Manager (accessed by App Hosting + Functions) |
-| Resend API key | Firebase Secret Manager |
-| App URL, App Env | Firebase App Hosting environment config |
+| Firebase client config (`NEXT_PUBLIC_FIREBASE_*`) | Netlify Dashboard → Environment variables |
+| Firebase Admin SDK private key | Netlify Dashboard → Environment variables (server-side only) |
+| Resend API key | Netlify Dashboard → Environment variables |
+| App URL, App Env | Netlify Dashboard → Environment variables |
 | Emulator toggle | `.env.local` only (never committed) |
 
 `.env.local` for local development (never committed to git):
@@ -1528,7 +1527,7 @@ Communication between Firebase and Cloud Run:
 - [x] Cloud Functions strategy planned
 - [x] Firebase Emulator Suite strategy planned
 - [x] POPIA obligations documented
-- [x] Firebase App Hosting deployment strategy planned
+- [x] Netlify deployment strategy planned (Firebase App Hosting kept as deferred alternative)
 - [x] Risks and assumptions captured
 
 ---
@@ -1542,7 +1541,7 @@ Communication between Firebase and Cloud Run:
 - [ ] Navigation component: Header (desktop + mobile), Footer
 - [ ] Prettier + lint-staged + Husky configured
 - [ ] GitHub Actions CI pipeline configured (lint, type-check, build)
-- [ ] Firebase App Hosting project linked to GitHub; preview deployments working
+- [ ] Netlify site linked to GitHub; preview deployments working
 - [ ] `.env.local.example` file created with all Firebase env var keys
 - [ ] `README.md` updated with dev setup instructions and Firebase Emulator setup
 - [ ] CLAUDE.md created for AI development context
@@ -1645,7 +1644,7 @@ Communication between Firebase and Cloud Run:
 - [ ] How It Works page
 - [ ] Contact / Report a Problem page
 - [ ] Terms & Conditions (POPIA-reviewed)
-- [ ] Privacy Policy (lists Firebase/Google Cloud, Resend, Firebase App Hosting as data processors)
+- [ ] Privacy Policy (lists Firebase/Google Cloud, Resend, Netlify as data processors)
 - [ ] Cookie consent banner (if Firebase Analytics added)
 - [ ] Security headers configured in `next.config.ts` (Firebase domains allowlisted in CSP)
 - [ ] `robots.txt` and `sitemap.xml` (dynamic — listing pages included)
@@ -1654,7 +1653,7 @@ Communication between Firebase and Cloud Run:
 - [ ] Firebase Security Rules audit — test all rules with `@firebase/rules-unit-testing`
 - [ ] Staging environment smoke test (all core journeys on `motorsphere-staging`)
 - [ ] Production Firebase project fully configured (Auth, Firestore backups, Functions deployed)
-- [ ] DNS and custom domain configured in Firebase App Hosting
+- [ ] DNS and custom domain configured in Netlify
 - [ ] Error monitoring configured (Firebase Crashlytics or Sentry)
 - [ ] **Launch 🚀**
 
@@ -1667,6 +1666,7 @@ Communication between Firebase and Cloud Run:
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 1 document |
 | 1.1 | 2026-05-27 | MotorSphere Team | Stack pivot: Supabase → Firebase. Replaced Section 11 (Supabase Planning) with full Firebase planning (Auth roles, Firestore collections, Security Rules, Cloud Functions, Emulator, App Hosting). Updated tech stack, deployment, security, risks, and all checklist items. |
 | 1.2 | 2026-05-27 | MotorSphere Team | Final stack confirmed. Firebase Blaze plan. Firebase Storage for all uploads. Firebase App Hosting for deployment (deferred). Updated Stack Pivot Note; confirmed Email/Password auth first (Google OAuth Phase 1b); Cloud Functions and App Hosting deferred until needed. All doc references to non-Firebase providers removed. |
+| 1.3 | 2026-05-27 | MotorSphere Team | Deployment stack update: Netlify is now the active hosting provider (replaces Firebase App Hosting as primary). Firebase App Hosting kept as deferred alternative. Updated Infrastructure table, Section 11.9, Section 13 (environment strategy, CI/CD, env vars), and all build checklists. Firebase backend unchanged. |
 
 ---
 

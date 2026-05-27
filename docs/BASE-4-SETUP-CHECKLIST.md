@@ -19,7 +19,7 @@
 1. [Claude Code Tasks (already done)](#1-claude-code-tasks-already-done)
 2. [Firebase Console Tasks](#2-firebase-console-tasks)
 3. [Firebase Storage Tasks](#3-firebase-storage-tasks)
-4. [Firebase App Hosting Tasks (deferred)](#4-firebase-app-hosting-tasks-deferred)
+4. [Netlify Deployment Tasks](#4-netlify-deployment-tasks)
 5. [Environment Variable Checklist](#5-environment-variable-checklist)
 6. [Local Emulator Verification](#6-local-emulator-verification)
 7. [Security Warnings — What Never to Expose](#7-security-warnings--what-never-to-expose)
@@ -52,7 +52,8 @@ These were completed during Base 3 scaffold (2026-05-27). Verify each file exist
 - [x] `firestore.indexes.json` — 17 composite indexes (strict JSON — no comments)
 - [x] `firebase.json` — Emulator ports: Auth 9099, Firestore 8080, Storage 9199, Functions 5001, UI 4000
 - [x] `.firebaserc` — staging + prod project aliases
-- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deployment deferred)
+- [x] `netlify.toml` — Netlify deployment config (committed; Netlify is the active hosting provider)
+- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative to Netlify)
 
 ### 1.5 — Cloud Functions Scaffold
 - [x] `functions/src/index.ts` — exports onUserCreate, onUserDelete, onVehicleCreate
@@ -66,7 +67,7 @@ These were completed during Base 3 scaffold (2026-05-27). Verify each file exist
 - [x] `.env.local.example` — all env var keys documented
 - [x] `CLAUDE.md` — AI development context
 - [x] `.github/workflows/ci.yml` — lint + typecheck + build + functions typecheck
-- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deployment deferred to Base 8)
+- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative — Netlify is active)
 - [x] `tsconfig.json` — `"exclude": ["functions"]` to prevent root typecheck picking up functions/
 - [x] `package.json` — `dev`, `dev:full`, `emulators`, `build`, `lint`, `typecheck` scripts
 
@@ -175,26 +176,56 @@ Image compression (resize to max 1200px + WebP conversion) will be done by `onIm
 
 ---
 
-## 4. Firebase App Hosting Tasks (deferred)
+## 4. Netlify Deployment Tasks
 
-> **These tasks are NOT required before Base 4 feature development.** App Hosting is set up when the app is ready for public deployment (Base 8 readiness check). Complete the checklist items below when that time comes.
+> **Netlify is the active hosting provider.** Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Netlify hosts the Next.js app and manages GitHub-based deploys and preview deployments.
+>
+> These tasks are completed once — not required before every Base stage, but should be done before the first staging preview is shared externally.
 
-### 4.1 — When to Activate
-App Hosting should be activated when:
-- [ ] All Core user journeys are working in the emulator
-- [ ] Security Rules have been tested with `@firebase/rules-unit-testing`
-- [ ] `npm run build` produces a clean build
-- [ ] All environment variables are confirmed and available
+### 4.1 — Netlify Site Setup
+- [ ] Create a Netlify account at [netlify.com](https://www.netlify.com) (if not already)
+- [ ] Import the GitHub repository: Netlify Dashboard → Add new site → Import an existing project
+- [ ] Connect GitHub account and select the `motorsphere-webapp` repository
+- [ ] Confirm build settings:
+  - Build command: `npm run build`
+  - Publish directory: `.next`
+  - Node version: `20` (set in `netlify.toml` — Netlify reads this automatically)
+- [ ] Deploy the site — Netlify will run the first build automatically
 
-### 4.2 — Setup Steps (when ready)
-- [ ] Firebase App Hosting backend created in Firebase Console for `motorsphere-staging`
-- [ ] GitHub repository connected to Firebase App Hosting
-- [ ] `apphosting.yaml` is already committed — review minInstances/maxInstances settings
-- [ ] Live branch set to `main`
-- [ ] All secrets added to Google Cloud Secret Manager (see Section 5)
-- [ ] Custom domain `motorsphere.co.za` configured in Firebase App Hosting DNS
-- [ ] Preview deployments confirmed working on PR branches
-- [ ] Same setup repeated for `motorsphere-prod`
+### 4.2 — Environment Variables (Netlify Dashboard)
+Set the following in **Netlify Dashboard → Site → Environment variables**:
+
+| Variable | Value | Scope |
+|---|---|---|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | From Firebase Console | All |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | From Firebase Console | All |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | From Firebase Console | All |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | From Firebase Console | All |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | From Firebase Console | All |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | From Firebase Console | All |
+| `FIREBASE_ADMIN_PROJECT_ID` | Same as project ID | All |
+| `FIREBASE_ADMIN_CLIENT_EMAIL` | From service account JSON | All |
+| `FIREBASE_ADMIN_PRIVATE_KEY` | From service account JSON (paste with `\n`) | All |
+| `RESEND_API_KEY` | From resend.com → API Keys | All |
+| `NEXT_PUBLIC_APP_URL` | Your Netlify URL or `https://motorsphere.co.za` | Production |
+| `NEXT_PUBLIC_APP_ENV` | `production` | Production |
+| `NEXT_PUBLIC_USE_FIREBASE_EMULATORS` | `false` | All |
+
+- [ ] All variables above added to Netlify Dashboard
+- [ ] Trigger a redeploy after adding variables: Netlify → Deploys → Trigger deploy
+
+### 4.3 — Preview Deployments
+- [ ] Confirm preview deployments are enabled: Netlify → Site configuration → Build & deploy → Deploy contexts
+- [ ] Open a test PR against `main` — verify Netlify creates a preview URL automatically
+- [ ] Preview URL format: `https://deploy-preview-{n}--{site-name}.netlify.app`
+
+### 4.4 — Custom Domain (when ready for launch)
+- [ ] Add domain in Netlify Dashboard → Domain management → Add a domain
+- [ ] Point DNS records to Netlify (Netlify provides the values)
+- [ ] SSL certificate provisioned automatically by Netlify (Let's Encrypt)
+
+### 4.5 — Firebase App Hosting (deferred alternative)
+> `apphosting.yaml` is committed to the repository. If the team decides to replace Netlify with Firebase App Hosting at Base 8, activate it then. No action required now.
 
 ---
 
@@ -254,16 +285,17 @@ npm run dev:full
 # 2. Go to http://localhost:3000 — App should load without console errors
 ```
 
-### 5.4 — Variables for Production (Firebase App Hosting)
+### 5.4 — Variables for Production (Netlify)
 
-When App Hosting is activated (Section 4), add these to **Google Cloud Secret Manager** for each project:
+Add all variables to the **Netlify Dashboard → Site → Environment variables** (see Section 4.2 for the full table). Netlify handles both public and private env vars securely — no separate secrets manager is needed.
 
-- `FIREBASE_ADMIN_PRIVATE_KEY` — the full private key (paste with literal `\n`)
-- `FIREBASE_ADMIN_CLIENT_EMAIL`
-- `FIREBASE_ADMIN_PROJECT_ID`
-- `RESEND_API_KEY`
+Key production values:
+- `NEXT_PUBLIC_APP_URL` → set to your live domain (`https://motorsphere.co.za`)
+- `NEXT_PUBLIC_APP_ENV` → `production`
+- `NEXT_PUBLIC_USE_FIREBASE_EMULATORS` → `false`
+- `FIREBASE_ADMIN_PRIVATE_KEY` → paste with literal `\n` characters (Netlify passes these to server-side functions correctly)
 
-Public vars (`NEXT_PUBLIC_*`) go in the Firebase App Hosting console environment config (not Secret Manager — they are not sensitive).
+> **Note:** If you later switch to Firebase App Hosting, move all variables to Google Cloud Secret Manager (for server-side vars) and the Firebase App Hosting console environment config (for `NEXT_PUBLIC_*` vars).
 
 ---
 
@@ -406,6 +438,7 @@ The `/admin/{userId}/verify/` storage path is private — only the owner and adm
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 4 setup checklist. Full Firebase stack (Auth + Firestore + Storage + App Hosting deferred). Separated Claude Code tasks, Firebase Console tasks, Storage tasks, App Hosting (deferred), env var checklist, emulator verification, and security warnings. |
+| 1.1 | 2026-05-27 | MotorSphere Team | Deployment stack update: Netlify is now the active hosting provider. Firebase App Hosting kept as deferred alternative. Section 4 replaced with Netlify deployment tasks. Section 5.4 updated to Netlify environment variables. |
 
 ---
 

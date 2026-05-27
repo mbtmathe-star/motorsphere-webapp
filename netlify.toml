@@ -29,6 +29,7 @@
 #   FIREBASE_ADMIN_PROJECT_ID
 #   FIREBASE_ADMIN_CLIENT_EMAIL
 #   FIREBASE_ADMIN_PRIVATE_KEY        ← paste with \n as literal characters
+#   RESEND_API_KEY                    ← get from resend.com → API Keys
 #
 #   NEXT_PUBLIC_APP_URL               ← your Netlify URL or custom domain
 #   NEXT_PUBLIC_APP_ENV               = production

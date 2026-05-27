@@ -11,7 +11,8 @@ Read this before suggesting code changes.
 - Next.js 16.x App Router, React 19, TypeScript 5 (strict mode)
 - Tailwind CSS v4 (CSS-first — `@theme {}` in globals.css — NO `tailwind.config.ts`)
 - shadcn/ui (component copies, dark theme, Tailwind v4 mode)
-- Firebase (Auth + Firestore + Storage + Functions + App Hosting)
+- Firebase (Auth + Firestore + Storage + Security Rules + Functions — backend only)
+- Netlify (hosting/deployment — `netlify.toml` + `@netlify/plugin-nextjs`)
 
 **Repo:** https://github.com/mbtmathe-star/motorsphere-webapp
 **Stage docs:** `docs/` directory — read the relevant BASE doc before making changes.
