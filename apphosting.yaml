@@ -1,0 +1,61 @@
+# apphosting.yaml — Firebase App Hosting configuration
+# Docs: https://firebase.google.com/docs/app-hosting/configure
+
+runConfig:
+  # Scale to zero when idle — no cost when unused
+  minInstances: 0
+  # Cap at 10 instances during MVP — prevents runaway costs
+  maxInstances: 10
+  # Concurrent requests per instance
+  concurrency: 80
+  # CPU allocation
+  cpu: 1
+  # Memory allocation
+  memoryMiB: 512
+
+env:
+  # ─── Public env vars (non-sensitive, embedded in client bundle) ───────────
+
+  - variable: NEXT_PUBLIC_APP_ENV
+    value: production
+
+  - variable: NEXT_PUBLIC_APP_URL
+    value: https://motorsphere.co.za
+
+  - variable: NEXT_PUBLIC_USE_FIREBASE_EMULATORS
+    value: "false"
+
+  # ─── Firebase client config (public — safe to expose in bundle) ───────────
+
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    secret: NEXT_PUBLIC_FIREBASE_API_KEY
+
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    secret: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    secret: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+
+  - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+    secret: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+
+  - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+    secret: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    secret: NEXT_PUBLIC_FIREBASE_APP_ID
+
+  # ─── Server-side secrets (NEVER expose to client) ─────────────────────────
+
+  - variable: FIREBASE_ADMIN_PROJECT_ID
+    secret: FIREBASE_ADMIN_PROJECT_ID
+
+  - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+    secret: FIREBASE_ADMIN_CLIENT_EMAIL
+
+  # Private key contains newlines — stored as single-line JSON string
+  - variable: FIREBASE_ADMIN_PRIVATE_KEY
+    secret: FIREBASE_ADMIN_PRIVATE_KEY
+
+  - variable: RESEND_API_KEY
+    secret: RESEND_API_KEY

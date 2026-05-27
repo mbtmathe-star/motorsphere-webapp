@@ -1,0 +1,79 @@
+# .github/workflows/ci.yml
+# MotorSphere CI — runs on every push and PR to main
+# Checks: lint, typecheck, build (Next.js), typecheck (Cloud Functions)
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ─── Next.js: Lint + Type Check + Build ───────────────────────────────────
+  quality:
+    name: Lint, Type Check & Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          # ── Minimal env vars for build to succeed ──────────────────────────
+          # next build embeds NEXT_PUBLIC_* at build time.
+          # Use placeholder strings — real values are set in Firebase App Hosting.
+          NEXT_PUBLIC_FIREBASE_API_KEY: build-placeholder
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: build-placeholder.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: build-placeholder
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: build-placeholder.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+          NEXT_PUBLIC_FIREBASE_APP_ID: 1:000000000000:web:placeholder
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_APP_ENV: test
+          NEXT_PUBLIC_USE_FIREBASE_EMULATORS: "false"
+          # Admin SDK — dummy values for build only.
+          # The Admin SDK uses LAZY initialization (see src/lib/firebase/admin.ts)
+          # so these values are never parsed during next build.
+          FIREBASE_ADMIN_PROJECT_ID: build-placeholder
+          FIREBASE_ADMIN_CLIENT_EMAIL: build@build-placeholder.iam.gserviceaccount.com
+          FIREBASE_ADMIN_PRIVATE_KEY: build-placeholder-not-parsed-at-build-time
+          RESEND_API_KEY: re_placeholder
+
+  # ─── Cloud Functions: Type Check ─────────────────────────────────────────
+  functions:
+    name: Functions Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install functions dependencies
+        run: cd functions && npm ci
+
+      - name: Type check functions
+        run: cd functions && npx tsc --noEmit

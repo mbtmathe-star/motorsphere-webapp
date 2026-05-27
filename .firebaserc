@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "motorsphere-staging",
+    "staging":  "motorsphere-staging",
+    "prod":     "motorsphere-prod"
+  },
+  "targets": {},
+  "etags": {}
+}

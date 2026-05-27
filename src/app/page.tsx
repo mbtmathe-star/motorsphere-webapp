@@ -1,65 +1,136 @@
-import Image from "next/image";
+/**
+ * src/app/page.tsx
+ *
+ * MotorSphere Landing Page — placeholder for Base 3 scaffold.
+ * The full homepage (HeroSection, CategoryGrid, MarqueeTicker) is built in Base 4.
+ *
+ * Design reference: docs/BASE-2B-FIGMA-SCREEN-MAPPING.md
+ */
 
-export default function Home() {
+import Link from 'next/link';
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="flex flex-col items-center justify-center min-h-screen page-container">
+      <div className="flex flex-col items-center gap-8 text-center max-w-2xl mx-auto py-24">
+
+        {/* Brand mark */}
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xl"
+            style={{ backgroundColor: 'var(--color-brand-primary)' }}
+          >
+            M
+          </div>
+          <span className="text-2xl font-bold tracking-tight text-foreground">
+            MotorSphere
+          </span>
+        </div>
+
+        {/* Headline */}
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+            South Africa&rsquo;s Automotive Marketplace
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg" style={{ color: 'var(--color-foreground-muted)' }}>
+            Buy and sell vehicles, parts, and accessories across South Africa.
+            Coming soon.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Status badge */}
+        <div
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium"
+          style={{
+            backgroundColor: 'var(--color-surface-muted)',
+            color:            'var(--color-foreground-muted)',
+            border:           '1px solid var(--color-border)',
+          }}
+        >
+          <span
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: 'var(--color-warning-fg)' }}
+          />
+          Base 3 Scaffold — Environment setup in progress
         </div>
-      </main>
-    </div>
+
+        {/* Quick links for development */}
+        <nav className="flex flex-wrap gap-3 justify-center" aria-label="Development navigation">
+          <Link
+            href="/vehicles"
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: 'var(--color-brand-primary)',
+              color:            'var(--color-brand-primary-fg)',
+            }}
+          >
+            Browse Vehicles
+          </Link>
+          <Link
+            href="/parts"
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: 'var(--color-surface-muted)',
+              color:            'var(--color-foreground)',
+              border:           '1px solid var(--color-border)',
+            }}
+          >
+            Browse Parts
+          </Link>
+          <Link
+            href="/login"
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors"
+            style={{
+              backgroundColor: 'var(--color-surface-muted)',
+              color:            'var(--color-foreground)',
+              border:           '1px solid var(--color-border)',
+            }}
+          >
+            Sign In
+          </Link>
+        </nav>
+
+        {/* Design token smoke test — dev only */}
+        {process.env.NEXT_PUBLIC_APP_ENV === 'development' && (
+          <details className="text-left w-full max-w-md">
+            <summary
+              className="text-xs cursor-pointer"
+              style={{ color: 'var(--color-foreground-subtle)' }}
+            >
+              Design token smoke test (dev only)
+            </summary>
+            <div className="mt-3 grid grid-cols-4 gap-2">
+              {[
+                ['background',    'var(--color-background)'],
+                ['surface',       'var(--color-surface)'],
+                ['surface-muted', 'var(--color-surface-muted)'],
+                ['brand-primary', 'var(--color-brand-primary)'],
+                ['ticker-bg',     'var(--color-ticker-bg)'],
+                ['ticker-star',   'var(--color-ticker-star)'],
+                ['success',       'var(--color-success)'],
+                ['destructive',   'var(--color-destructive)'],
+              ].map(([name, value]) => (
+                <div key={name} className="flex flex-col items-center gap-1">
+                  <div
+                    className="w-8 h-8 rounded"
+                    style={{
+                      backgroundColor: value,
+                      border:          '1px solid var(--color-border)',
+                    }}
+                  />
+                  <span
+                    className="text-[9px] text-center leading-tight"
+                    style={{ color: 'var(--color-foreground-subtle)' }}
+                  >
+                    {name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+
+      </div>
+    </main>
   );
 }

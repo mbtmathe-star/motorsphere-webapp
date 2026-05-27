@@ -1,0 +1,192 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper functions ───────────────────────────────────────────────────
+
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isOwner(docUserId) {
+      return isAuth() && uid() == docUserId;
+    }
+
+    function hasRole(roles) {
+      return isAuth() && request.auth.token.role in roles;
+    }
+
+    function isAdmin() {
+      return hasRole(['admin', 'super_admin']);
+    }
+
+    function isVerifiedOrAbove() {
+      return hasRole(['verified_seller', 'admin', 'super_admin']);
+    }
+
+    // A listing is readable if it's active, OR the viewer is the owner, OR the viewer is admin
+    function canReadListing(status, docUserId) {
+      return status == 'active'
+          || isOwner(docUserId)
+          || isAdmin();
+    }
+
+    // ─── /users/{uid} ────────────────────────────────────────────────────────
+
+    match /users/{userId} {
+      // Public profiles are readable by everyone
+      allow read: if true;
+
+      allow create: if isAuth()
+                    && uid() == userId
+                    // Enforce safe initial values — clients cannot self-elevate
+                    && request.resource.data.role       == 'user'
+                    && request.resource.data.isVerified == false
+                    && request.resource.data.isSuspended == false;
+
+      allow update: if (
+                        isOwner(userId)
+                        // Users cannot escalate their own role, verify themselves, or unsuspend themselves
+                        && request.resource.data.role        == resource.data.role
+                        && request.resource.data.isVerified  == resource.data.isVerified
+                        && request.resource.data.isSuspended == resource.data.isSuspended
+                      )
+                      || isAdmin(); // Admins can update anything
+
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ─── /vehicles/{vehicleId} ───────────────────────────────────────────────
+
+    match /vehicles/{vehicleId} {
+      allow read: if canReadListing(resource.data.status, resource.data.userId);
+
+      allow create: if isAuth()
+                    && request.resource.data.userId == uid()
+                    // Only draft or pending_review on create — cannot self-publish
+                    && request.resource.data.status in ['draft', 'pending_review']
+                    // Prevent client from setting admin-only fields
+                    && request.resource.data.featured   == false
+                    && request.resource.data.viewsCount == 0;
+
+      allow update: if (
+                        isOwner(resource.data.userId)
+                        // Users cannot self-approve a listing (status: anything → active)
+                        && !(resource.data.status != 'active'
+                             && request.resource.data.status == 'active')
+                      )
+                      || isAdmin();
+
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+
+      // ── /vehicles/{vehicleId}/images ────────────────────────────────────
+
+      match /images/{imageId} {
+        allow read: if canReadListing(
+          get(/databases/$(database)/documents/vehicles/$(vehicleId)).data.status,
+          get(/databases/$(database)/documents/vehicles/$(vehicleId)).data.userId
+        );
+        allow create, update, delete: if isOwner(
+          get(/databases/$(database)/documents/vehicles/$(vehicleId)).data.userId
+        ) || isAdmin();
+      }
+    }
+
+    // ─── /parts/{partId} ────────────────────────────────────────────────────
+
+    match /parts/{partId} {
+      allow read: if canReadListing(resource.data.status, resource.data.userId);
+
+      allow create: if isAuth()
+                    && request.resource.data.userId == uid()
+                    && request.resource.data.status in ['draft', 'pending_review']
+                    && request.resource.data.featured   == false
+                    && request.resource.data.viewsCount == 0;
+
+      allow update: if (
+                        isOwner(resource.data.userId)
+                        && !(resource.data.status != 'active'
+                             && request.resource.data.status == 'active')
+                      )
+                      || isAdmin();
+
+      allow delete: if isOwner(resource.data.userId) || isAdmin();
+
+      // ── /parts/{partId}/images ───────────────────────────────────────────
+
+      match /images/{imageId} {
+        allow read: if canReadListing(
+          get(/databases/$(database)/documents/parts/$(partId)).data.status,
+          get(/databases/$(database)/documents/parts/$(partId)).data.userId
+        );
+        allow create, update, delete: if isOwner(
+          get(/databases/$(database)/documents/parts/$(partId)).data.userId
+        ) || isAdmin();
+      }
+    }
+
+    // ─── /inquiries/{inquiryId} ──────────────────────────────────────────────
+
+    match /inquiries/{inquiryId} {
+      // Only the sender, receiver, or admin can read an inquiry
+      allow read: if isAuth() && (
+        uid() == resource.data.senderId   ||
+        uid() == resource.data.receiverId ||
+        isAdmin()
+      );
+
+      allow create: if isAuth()
+                    && request.resource.data.senderId == uid()
+                    // Cannot send an inquiry to yourself
+                    && request.resource.data.receiverId != uid();
+
+      // Only the receiver can mark as read; no other field changes allowed by non-admins
+      allow update: if (
+                        isAuth()
+                        && uid() == resource.data.receiverId
+                        && request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(['isRead'])
+                      )
+                      || isAdmin();
+
+      // ── /inquiries/{inquiryId}/replies ────────────────────────────────────
+
+      match /replies/{replyId} {
+        allow read: if isAuth() && (
+          uid() == get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.senderId   ||
+          uid() == get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.receiverId ||
+          isAdmin()
+        );
+        // Both parties in the inquiry thread can reply
+        allow create: if isAuth() && (
+          uid() == get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.senderId ||
+          uid() == get(/databases/$(database)/documents/inquiries/$(inquiryId)).data.receiverId
+        );
+        // Only admins can update or delete replies (content moderation)
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // ─── /savedListings/{savedId} ────────────────────────────────────────────
+
+    match /savedListings/{savedId} {
+      allow read:   if isAuth() && uid() == resource.data.userId;
+      allow create: if isAuth() && request.resource.data.userId == uid();
+      allow delete: if isAuth() && uid() == resource.data.userId;
+      // Saves are immutable — delete and re-create to "update"
+      allow update: if false;
+    }
+
+    // ─── /adminFlags/{flagId} ────────────────────────────────────────────────
+
+    match /adminFlags/{flagId} {
+      allow read:          if isAdmin();
+      allow create:        if isAuth() && request.resource.data.flaggedBy == uid();
+      allow update, delete: if isAdmin();
+    }
+  }
+}

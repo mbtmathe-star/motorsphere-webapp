@@ -30,11 +30,27 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files — NEVER commit .env.local (contains Firebase credentials)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# .env.local.example IS committed (safe — contains no real values)
 
 # vercel
 .vercel
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Functions build output
+functions/lib/
+
+# Emulator data is committed (safe test data only)
+# emulator-data/  ← keep this; it contains seeded test data
 
 # typescript
 *.tsbuildinfo
