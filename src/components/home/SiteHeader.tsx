@@ -79,16 +79,13 @@ export default function SiteHeader() {
     <>
       {/* ── Hero Section ───────────────────────────────────────────────────────── */}
       <section
-        className="relative min-h-[690px] pb-8"
+        className="relative pb-8"
         style={{
-          background: `
-            linear-gradient(180deg, rgba(0,0,0,.78) 0%, rgba(0,0,0,.58) 320px, rgba(246,248,252,.88) 600px, #f4f7fb 100%),
-            url("https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80") center top / cover
-          `,
+          background: `url("https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80") center top / cover`,
         }}
       >
         {/* ── Top Controls ─────────────────────────────────────────────────────── */}
-        <div className="px-[3.8vw] grid grid-cols-[1fr_auto_1fr] items-center min-h-[106px] relative z-20">
+        <div className="px-[3.8vw] grid grid-cols-[1fr_auto_1fr] items-center min-h-[64px] relative z-20" style={{ background: '#0866ff' }}>
 
           {/* Left: Menu */}
           <div className="relative flex items-center gap-2.5">
@@ -96,7 +93,7 @@ export default function SiteHeader() {
               id="ms-menu-btn"
               onClick={() => { setMenuOpen(o => !o); setLangOpen(false); }}
               className="inline-flex items-center gap-2.5 min-h-[40px] px-[17px] text-white rounded-[10px] text-base font-bold shadow-[0_8px_22px_rgba(0,0,0,.22)] transition-all duration-200 hover:-translate-y-px"
-              style={{ background: 'rgba(38,38,38,.72)', backdropFilter: 'blur(12px)' }}
+              style={{ background: 'rgba(255,255,255,.2)' }}
               aria-expanded={menuOpen}
               aria-label="Main menu"
             >
@@ -147,7 +144,7 @@ export default function SiteHeader() {
               id="ms-lang-btn"
               onClick={() => { setLangOpen(o => !o); setMenuOpen(false); }}
               className="inline-flex items-center gap-2.5 min-h-[40px] px-[17px] text-white rounded-[10px] text-base font-bold shadow-[0_8px_22px_rgba(0,0,0,.22)] transition-all duration-200 hover:-translate-y-px"
-              style={{ background: 'rgba(38,38,38,.72)', backdropFilter: 'blur(12px)' }}
+              style={{ background: 'rgba(255,255,255,.2)' }}
               aria-expanded={langOpen}
               aria-label="Select language"
             >
@@ -177,7 +174,7 @@ export default function SiteHeader() {
             <button
               onClick={() => setModalOpen(true)}
               className="inline-flex items-center justify-center w-10 h-10 text-white rounded-[10px] shadow-[0_8px_22px_rgba(0,0,0,.22)] transition-all duration-200 hover:-translate-y-px"
-              style={{ background: 'rgba(38,38,38,.72)', backdropFilter: 'blur(12px)' }}
+              style={{ background: 'rgba(255,255,255,.2)' }}
               aria-label="Open backoffice settings"
             >
               <span className="w-5 h-5"><SettingsIcon /></span>
@@ -270,7 +267,7 @@ export default function SiteHeader() {
         </form>
 
         {/* ── Category Grid ─────────────────────────────────────────────────────── */}
-        <section className="relative z-10 px-[2.6vw] pb-24">
+        <section className="relative z-10 px-[2.6vw] py-6">
           <div
             className="grid gap-4 mx-auto"
             style={{
