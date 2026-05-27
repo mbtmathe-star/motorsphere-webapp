@@ -279,14 +279,20 @@ export default function SiteHeader() {
               <Link
                 key={cat.id}
                 href={`/category/${cat.id}`}
-                className="flex flex-col items-center justify-center text-center min-h-[112px] rounded-[14px] p-3.5 text-white font-bold shadow-[0_14px_26px_rgba(0,0,0,.16)] transition-transform duration-[180ms] hover:-translate-y-[5px] hover:brightness-105"
-                style={{ backgroundColor: cat.color }}
+                className="flex flex-col items-center justify-center text-center min-h-[112px] rounded-[14px] p-3.5 text-white font-bold transition-all duration-[180ms] hover:-translate-y-[5px] hover:brightness-110 active:scale-95"
+                style={{
+                  background:           'rgba(255,255,255,.13)',
+                  backdropFilter:       'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  border:               '1px solid rgba(255,255,255,.22)',
+                  boxShadow:            '0 4px 20px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.18)',
+                }}
                 title={cat.desc}
               >
-                <span className="w-[38px] h-[38px] mb-2.5 drop-shadow-[0_3px_5px_rgba(0,0,0,.15)]">
+                <span className="w-[38px] h-[38px] mb-2.5 drop-shadow-[0_2px_6px_rgba(0,0,0,.35)]">
                   <Icon name={cat.icon} className="w-full h-full" />
                 </span>
-                <span className="text-sm leading-[1.2]">{cat.label}</span>
+                <span className="text-sm leading-[1.2] drop-shadow-[0_1px_3px_rgba(0,0,0,.4)]">{cat.label}</span>
               </Link>
             ))}
           </div>
