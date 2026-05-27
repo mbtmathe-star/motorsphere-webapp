@@ -1,24 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import { allListings } from '@/data/home-data';
 
-type DemoUser = { email: string; role: string; name: string };
-
 export default function DealerPage() {
-  const [user, setUser] = useState<DemoUser | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
-
-  const stock = allListings.filter(l => l.type === 'vehicles' || l.type === 'trucks-buses');
+  const { user } = useAuth();
 
   if (!user) return null;
+
+  const stock = allListings.filter(l => l.type === 'vehicles' || l.type === 'trucks-buses');
 
   return (
     <div className="space-y-6">

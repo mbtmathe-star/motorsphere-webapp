@@ -1,39 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-type DemoUser = { email: string; role: string; name: string };
+import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { toNavKey } from '@/lib/accountType';
 
 type DocStatus = 'not_uploaded' | 'uploaded' | 'verified';
 
 type Doc = {
-  id: string;
-  label: string;
-  desc: string;
+  id:       string;
+  label:    string;
+  desc:     string;
   required: boolean;
-  status: DocStatus;
+  status:   DocStatus;
 };
 
-const DOCS_BY_ROLE: Record<string, Doc[]> = {
+// Documents required per nav role key
+const DOCS_BY_NAV_KEY: Record<string, Doc[]> = {
   seller: [
-    { id: 'id', label: 'SA ID / Passport', desc: 'Clear copy of your South African ID or passport.', required: true, status: 'not_uploaded' },
-    { id: 'proof', label: 'Proof of Address', desc: 'Bank statement or utility bill — not older than 3 months.', required: true, status: 'not_uploaded' },
-    { id: 'selfie', label: 'Selfie with ID', desc: 'Hold your ID next to your face.', required: false, status: 'not_uploaded' },
+    { id: 'id',    label: 'SA ID / Passport',    desc: 'Clear copy of your South African ID or passport.',      required: true,  status: 'not_uploaded' },
+    { id: 'proof', label: 'Proof of Address',     desc: 'Bank statement or utility bill — not older than 3 months.', required: true, status: 'not_uploaded' },
+    { id: 'selfie',label: 'Selfie with ID',       desc: 'Hold your ID next to your face.',                       required: false, status: 'not_uploaded' },
   ],
   dealer: [
-    { id: 'biz', label: 'Business Registration', desc: 'CIPC certificate or CK document.', required: true, status: 'not_uploaded' },
-    { id: 'id', label: 'Director ID', desc: 'SA ID of the responsible director.', required: true, status: 'not_uploaded' },
-    { id: 'vat', label: 'VAT Registration', desc: 'SARS VAT registration certificate.', required: false, status: 'not_uploaded' },
-    { id: 'natis', label: 'NaTIS Dealer Licence', desc: 'Current Motor Dealer licence from NATIS.', required: true, status: 'not_uploaded' },
+    { id: 'biz',   label: 'Business Registration',desc: 'CIPC certificate or CK document.',                      required: true,  status: 'not_uploaded' },
+    { id: 'id',    label: 'Director ID',          desc: 'SA ID of the responsible director.',                    required: true,  status: 'not_uploaded' },
+    { id: 'vat',   label: 'VAT Registration',     desc: 'SARS VAT registration certificate.',                    required: false, status: 'not_uploaded' },
+    { id: 'natis', label: 'NaTIS Dealer Licence', desc: 'Current Motor Dealer licence from NaTIS.',              required: true,  status: 'not_uploaded' },
   ],
   workshop: [
-    { id: 'id', label: 'Owner ID', desc: 'SA ID of the workshop owner.', required: true, status: 'not_uploaded' },
-    { id: 'rmi', label: 'RMI Membership Certificate', desc: 'Current RMI membership or application.', required: false, status: 'not_uploaded' },
-    { id: 'trade', label: 'Trade Licence', desc: 'Current municipal trade licence.', required: true, status: 'not_uploaded' },
+    { id: 'id',    label: 'Owner ID',             desc: 'SA ID of the workshop owner.',                          required: true,  status: 'not_uploaded' },
+    { id: 'rmi',   label: 'RMI Membership Certificate', desc: 'Current RMI membership or application.',         required: false, status: 'not_uploaded' },
+    { id: 'trade', label: 'Trade Licence',        desc: 'Current municipal trade licence.',                      required: true,  status: 'not_uploaded' },
   ],
   vendor: [
-    { id: 'id', label: 'SA ID / Passport', desc: 'Clear copy of your South African ID or passport.', required: true, status: 'not_uploaded' },
-    { id: 'biz', label: 'Business Registration', desc: 'CIPC certificate if trading as a business.', required: false, status: 'not_uploaded' },
+    { id: 'id',    label: 'SA ID / Passport',    desc: 'Clear copy of your South African ID or passport.',       required: true,  status: 'not_uploaded' },
+    { id: 'biz',   label: 'Business Registration',desc: 'CIPC certificate if trading as a business.',            required: false, status: 'not_uploaded' },
+  ],
+  buyer: [
+    { id: 'id',    label: 'SA ID / Passport',    desc: 'Clear copy of your South African ID or passport.',       required: true,  status: 'not_uploaded' },
   ],
 };
 
@@ -44,29 +48,19 @@ const STATUS_STYLES: Record<DocStatus, { icon: string; label: string; bg: string
 };
 
 export default function VerifyPage() {
-  const [user, setUser]   = useState<DemoUser | null>(null);
-  const [docs, setDocs]   = useState<Doc[]>([]);
+  const { user, profile } = useAuth();
+  const navKey = toNavKey(profile?.accountType);
+
+  const [docs, setDocs]     = useState<Doc[]>(DOCS_BY_NAV_KEY[navKey] ?? DOCS_BY_NAV_KEY.seller);
   const [submitted, setSub] = useState(false);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try {
-        const u = JSON.parse(stored) as DemoUser;
-        setUser(u);
-        const roleDocs = DOCS_BY_ROLE[u.role] ?? DOCS_BY_ROLE.seller;
-        setDocs(roleDocs);
-      } catch { /* ignore */ }
-    }
-  }, []);
+  if (!user) return null;
 
   const upload = (id: string) => {
     setDocs(prev => prev.map(d => d.id === id ? { ...d, status: 'uploaded' } : d));
   };
 
   const allRequired = docs.filter(d => d.required).every(d => d.status !== 'not_uploaded');
-
-  if (!user) return null;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -84,8 +78,8 @@ export default function VerifyPage() {
           <li>✓ Verified badge on your profile and listings</li>
           <li>✓ Higher listing limits and priority placement</li>
           <li>✓ Buyer trust — buyers prefer verified sellers</li>
-          {user.role === 'dealer' && <li>✓ Dealer storefront page</li>}
-          {user.role === 'workshop' && <li>✓ RMI workshop badge and directory listing</li>}
+          {navKey === 'dealer'   && <li>✓ Dealer storefront page</li>}
+          {navKey === 'workshop' && <li>✓ RMI workshop badge and directory listing</li>}
         </ul>
       </div>
 
@@ -122,7 +116,7 @@ export default function VerifyPage() {
                         onClick={() => upload(doc.id)}
                         className="text-xs font-bold text-[#0866ff] hover:underline"
                       >
-                        Upload file (demo)
+                        Upload file
                       </button>
                     )}
                   </div>

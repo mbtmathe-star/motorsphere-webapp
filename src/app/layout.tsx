@@ -1,6 +1,7 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import { AuthProvider } from '@/components/providers/AuthProvider';
 import './globals.css';
 
 const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
@@ -22,10 +23,17 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // 'dark' class forces shadcn/ui dark mode — MotorSphere is dark-first (confirmed from Figma)
+    // 'dark' class forces shadcn/ui dark mode — MotorSphere is dark-first
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark`}>
       <body className="min-h-screen flex flex-col antialiased">
-        {children}
+        {/*
+          AuthProvider wraps everything so every client component can call useAuth().
+          It is a "use client" component — safe to use inside this Server Component layout
+          because Next.js renders client components at the boundary.
+        */}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

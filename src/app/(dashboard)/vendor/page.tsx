@@ -1,24 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import { allListings } from '@/data/home-data';
 
-type DemoUser = { email: string; role: string; name: string };
-
 export default function VendorPage() {
-  const [user, setUser] = useState<DemoUser | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
-
-  const parts = allListings.filter(l => l.type === 'parts' || l.type === 'spares' || l.type === 'tyres');
+  const { user } = useAuth();
 
   if (!user) return null;
+
+  const parts = allListings.filter(l => l.type === 'parts' || l.type === 'spares' || l.type === 'tyres');
 
   return (
     <div className="space-y-6">

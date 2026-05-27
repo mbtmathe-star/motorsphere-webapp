@@ -78,6 +78,25 @@ export const USER_ROLES = [
 ] as const;
 export type UserRole = typeof USER_ROLES[number];
 
+// Marketplace account category (set at registration, distinct from security role)
+export const ACCOUNT_TYPES = [
+  'buyer',
+  'private_seller',
+  'dealer',
+  'parts_vendor',
+  'workshop',
+  'admin_preview',
+] as const;
+export type AccountType = typeof ACCOUNT_TYPES[number];
+
+export const VERIFICATION_STATUSES = [
+  'not_started',
+  'pending',
+  'approved',
+  'rejected',
+] as const;
+export type VerificationStatus = typeof VERIFICATION_STATUSES[number];
+
 export const CONTACT_PREFS = [
   'platform_only',
   'show_phone',
@@ -94,19 +113,26 @@ export type ListingType = typeof LISTING_TYPES[number];
 // ─── /users/{uid} ────────────────────────────────────────────────────────────
 
 export interface UserDoc {
-  uid:          string;          // = document ID = Firebase Auth UID
-  username:     string;
-  displayName:  string;
-  avatarUrl:    string | null;
-  phone:        string | null;
-  province:     Province | null;
-  bio:          string | null;
-  isVerified:   boolean;
-  isSuspended:  boolean;
-  role:         UserRole;
-  listingCount: number;
-  createdAt:    Timestamp;
-  updatedAt:    Timestamp;
+  uid:                  string;          // = document ID = Firebase Auth UID
+  username:             string;          // auto-generated from email prefix
+  displayName:          string;          // full name entered at registration
+  email:                string;          // email address
+  avatarUrl:            string | null;
+  phone:                string | null;
+  province:             Province | null;
+  bio:                  string | null;
+  // Security role — enforced by Firestore rules (always 'user' on create)
+  role:                 UserRole;
+  // Marketplace account category — chosen at registration
+  accountType:          AccountType;
+  isVerified:           boolean;
+  isSuspended:          boolean;
+  verificationStatus:   VerificationStatus;
+  profileCompletion:    number;          // 0–100
+  popiaConsentAccepted: boolean;
+  listingCount:         number;
+  createdAt:            Timestamp;
+  updatedAt:            Timestamp;
 }
 
 // ─── /vehicles/{vehicleId} ───────────────────────────────────────────────────

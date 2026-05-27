@@ -1,26 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import { allListings, type Listing } from '@/data/home-data';
 
 const INITIAL_SAVED = ['veh-1', 'veh-2', 'part-1'];
 
 export default function SavedPage() {
+  const { user } = useAuth();
   const [savedIds, setSavedIds] = useState<string[]>(INITIAL_SAVED);
 
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_saved_listings');
-    if (stored) {
-      try { setSavedIds(JSON.parse(stored) as string[]); } catch { /* ignore */ }
-    }
-  }, []);
-
   const remove = (id: string) => {
-    const next = savedIds.filter(s => s !== id);
-    setSavedIds(next);
-    localStorage.setItem('ms_saved_listings', JSON.stringify(next));
+    setSavedIds(prev => prev.filter(s => s !== id));
   };
+
+  if (!user) return null;
 
   const saved: Listing[] = allListings.filter(l => savedIds.includes(l.id));
 

@@ -1,20 +1,18 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-
-type DemoUser = { email: string; role: string; name: string };
+import { useAuth } from '@/hooks/useAuth';
 
 type ListingStatus = 'pending' | 'approved' | 'rejected';
 
 type MyListing = {
-  id: string;
-  title: string;
-  price: string;
-  status: ListingStatus;
-  views: number;
-  inquiries: number;
-  createdAt: string;
+  id:         string;
+  title:      string;
+  price:      string;
+  status:     ListingStatus;
+  views:      number;
+  inquiries:  number;
+  createdAt:  string;
 };
 
 const DEMO_LISTINGS: MyListing[] = [
@@ -45,14 +43,7 @@ const STATUS_STYLES: Record<ListingStatus, { bg: string; text: string; label: st
 };
 
 export default function SellerPage() {
-  const [user, setUser] = useState<DemoUser | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
+  const { user } = useAuth();
 
   if (!user) return null;
 
@@ -128,7 +119,7 @@ export default function SellerPage() {
         })}
       </div>
 
-      {/* Pending state callout */}
+      {/* Pending callout */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
         <p className="text-sm font-black text-amber-800">⏳ 1 listing pending admin review</p>
         <p className="text-xs text-amber-700 mt-1">

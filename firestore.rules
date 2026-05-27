@@ -43,17 +43,28 @@ service cloud.firestore {
 
       allow create: if isAuth()
                     && uid() == userId
-                    // Enforce safe initial values — clients cannot self-elevate
-                    && request.resource.data.role       == 'user'
-                    && request.resource.data.isVerified == false
-                    && request.resource.data.isSuspended == false;
+                    // Security role must be 'user' on create — clients cannot self-elevate
+                    && request.resource.data.role         == 'user'
+                    // Verification and suspension state are admin-only fields
+                    && request.resource.data.isVerified   == false
+                    && request.resource.data.isSuspended  == false
+                    // Verification status must start at 'not_started'
+                    && request.resource.data.verificationStatus == 'not_started'
+                    // Marketplace account type must be a recognised value
+                    && request.resource.data.accountType in [
+                         'buyer', 'private_seller', 'dealer',
+                         'parts_vendor', 'workshop', 'admin_preview'
+                       ];
 
       allow update: if (
                         isOwner(userId)
-                        // Users cannot escalate their own role, verify themselves, or unsuspend themselves
-                        && request.resource.data.role        == resource.data.role
-                        && request.resource.data.isVerified  == resource.data.isVerified
-                        && request.resource.data.isSuspended == resource.data.isSuspended
+                        // Users cannot change security-sensitive fields
+                        && request.resource.data.role             == resource.data.role
+                        && request.resource.data.isVerified       == resource.data.isVerified
+                        && request.resource.data.isSuspended      == resource.data.isSuspended
+                        && request.resource.data.verificationStatus == resource.data.verificationStatus
+                        // Users cannot change their own accountType after registration
+                        && request.resource.data.accountType      == resource.data.accountType
                       )
                       || isAdmin(); // Admins can update anything
 

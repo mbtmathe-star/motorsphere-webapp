@@ -1,26 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 import { allListings } from '@/data/home-data';
-
-type DemoUser = { email: string; role: string; name: string };
 
 const SAVED_IDS = ['veh-1', 'veh-2', 'part-1'];
 
 export default function BuyerPage() {
-  const [user, setUser] = useState<DemoUser | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
-
-  const savedListings = allListings.filter(l => SAVED_IDS.includes(l.id));
+  const { user } = useAuth();
 
   if (!user) return null;
+
+  const savedListings = allListings.filter(l => SAVED_IDS.includes(l.id));
 
   return (
     <div className="space-y-6">
@@ -53,11 +44,7 @@ export default function BuyerPage() {
               className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={listing.image}
-                alt={listing.title}
-                className="w-28 h-28 object-cover shrink-0"
-              />
+              <img src={listing.image} alt={listing.title} className="w-28 h-28 object-cover shrink-0" />
               <div className="p-4 min-w-0">
                 <p className="text-sm font-black text-gray-900 truncate">{listing.title}</p>
                 <p className="text-[13px] font-black mt-1" style={{ color: '#0866ff' }}>{listing.priceDisplay}</p>

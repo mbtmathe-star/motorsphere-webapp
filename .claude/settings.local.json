@@ -14,7 +14,10 @@
       "Bash(npx tsc *)",
       "Bash(mkdir -p \"C:/Users/CASH CONVERTERS/Desktop/motorsphere/motorsphere-webapp/src/app/\\(marketplace\\)/category/[slug]\")",
       "Bash(mkdir -p \"C:/Users/CASH CONVERTERS/Desktop/motorsphere/motorsphere-webapp/src/app/\\(marketplace\\)/listing/[id]\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git commit -m 'content: rewrite all public-facing copy to real MotorSphere brand language *)",
+      "Bash(git push *)",
+      "Bash(git add *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\CASH CONVERTERS\\Desktop\\motorsphere\\motorsphere-webapp"

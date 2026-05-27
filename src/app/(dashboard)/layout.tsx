@@ -1,10 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import type { AccountType } from '@/types/firestore.types';
 
-type DemoUser = { email: string; role: string; name: string };
+// ── Map accountType → sidebar nav key ────────────────────────────────────────
+
+const ACCOUNT_TYPE_TO_NAV: Record<AccountType, string> = {
+  buyer:          'buyer',
+  private_seller: 'seller',
+  dealer:         'dealer',
+  parts_vendor:   'vendor',
+  workshop:       'workshop',
+  admin_preview:  'admin',
+};
+
+// ── Nav items by role ─────────────────────────────────────────────────────────
 
 const NAV_BY_ROLE: Record<string, { label: string; href: string }[]> = {
   buyer: [
@@ -30,11 +42,11 @@ const NAV_BY_ROLE: Record<string, { label: string; href: string }[]> = {
     { label: 'Profile',          href: '/profile' },
   ],
   vendor: [
-    { label: 'Overview',        href: '/dashboard' },
-    { label: 'Inventory',       href: '/vendor' },
-    { label: 'Add Part',        href: '/listings/new' },
-    { label: 'Quote Requests',  href: '/inquiries' },
-    { label: 'Profile',         href: '/profile' },
+    { label: 'Overview',       href: '/dashboard' },
+    { label: 'Inventory',      href: '/vendor' },
+    { label: 'Add Part',       href: '/listings/new' },
+    { label: 'Quote Requests', href: '/inquiries' },
+    { label: 'Profile',        href: '/profile' },
   ],
   workshop: [
     { label: 'Overview',         href: '/dashboard' },
@@ -50,50 +62,55 @@ const NAV_BY_ROLE: Record<string, { label: string; href: string }[]> = {
   ],
 };
 
-const ROLE_LABELS: Record<string, string> = {
-  buyer:    'Buyer',
-  seller:   'Private Seller',
-  dealer:   'Dealer',
-  vendor:   'Parts Vendor',
-  workshop: 'Workshop',
-  admin:    'Administrator',
+const ROLE_LABELS: Record<AccountType, string> = {
+  buyer:          'Buyer',
+  private_seller: 'Private Seller',
+  dealer:         'Dealer',
+  parts_vendor:   'Parts Vendor',
+  workshop:       'Workshop',
+  admin_preview:  'Admin Preview',
 };
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [user, setUser]           = useState<DemoUser | null>(null);
-  const [sidebarOpen, setSidebar] = useState(false);
-  const [mounted, setMounted]     = useState(false);
+  const { user, profile, loading, logout } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    } else {
-      router.push('/login');
-    }
-  }, [router]);
+  // While auth resolves — show nothing to avoid flash
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f4f7fb' }}>
+        <div className="w-8 h-8 border-2 border-[#0866ff] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
-  const handleLogout = () => {
-    localStorage.removeItem('ms_demo_user');
+  // Not signed in — redirect to login
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
+
+  const accountType = profile?.accountType ?? 'buyer';
+  const navKey      = ACCOUNT_TYPE_TO_NAV[accountType] ?? 'buyer';
+  const navItems    = NAV_BY_ROLE[navKey] ?? NAV_BY_ROLE.buyer;
+  const roleLabel   = ROLE_LABELS[accountType] ?? 'User';
+  const displayName = profile?.displayName ?? user.email ?? 'User';
+  const email       = profile?.email ?? user.email ?? '';
+
+  const handleLogout = async () => {
+    await logout();
     router.push('/');
   };
-
-  if (!mounted || !user) return null;
-
-  const navItems  = NAV_BY_ROLE[user.role] ?? NAV_BY_ROLE.buyer;
-  const roleLabel = ROLE_LABELS[user.role] ?? 'User';
 
   return (
     <div className="min-h-screen flex" style={{ background: '#f4f7fb' }}>
 
-      {/* ── Sidebar ─────────────────────────────────────── */}
+      {/* ── Sidebar ─────────────────────────────────────────────────────── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-60 flex flex-col transition-transform duration-200
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}
+        className="fixed inset-y-0 left-0 z-40 w-60 flex flex-col md:translate-x-0 -translate-x-full transition-transform duration-200"
         style={{ background: '#121826' }}
+        id="ms-sidebar"
       >
         {/* Logo */}
         <div className="h-14 flex items-center px-5 border-b border-white/[.08] shrink-0">
@@ -127,7 +144,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setSidebar(false)}
                 className={`flex items-center px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                   active ? 'text-white' : 'text-white/60 hover:text-white hover:bg-white/[.08]'
                 }`}
@@ -142,8 +158,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* User footer */}
         <div className="px-3 py-4 border-t border-white/[.08] space-y-1 shrink-0">
           <div className="px-3 py-1 truncate">
-            <div className="text-xs font-bold text-white/80">{user.name}</div>
-            <div className="text-[11px] text-white/40 truncate">{user.email}</div>
+            <div className="text-xs font-bold text-white/80 truncate">{displayName}</div>
+            <div className="text-[11px] text-white/40 truncate">{email}</div>
           </div>
           <button
             onClick={handleLogout}
@@ -154,30 +170,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setSidebar(false)}
-        />
-      )}
-
-      {/* ── Main ────────────────────────────────────────── */}
+      {/* ── Main ────────────────────────────────────────────────────────── */}
       <div className="flex-1 md:ml-60 flex flex-col min-h-screen">
         {/* Top bar */}
         <header
           className="sticky top-0 z-20 h-14 flex items-center justify-between px-4 md:px-6 border-b border-black/[.06] shrink-0"
           style={{ background: '#fff' }}
         >
-          <button
-            onClick={() => setSidebar(s => !s)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-600"
-            aria-label="Toggle menu"
-          >
-            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
           <div className="hidden md:block text-sm font-bold text-gray-600 capitalize">
             {roleLabel} Portal
           </div>
@@ -189,7 +188,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-black"
               style={{ background: '#0866ff' }}
             >
-              {user.name[0]?.toUpperCase() ?? 'U'}
+              {displayName[0]?.toUpperCase() ?? 'U'}
             </div>
           </div>
         </header>

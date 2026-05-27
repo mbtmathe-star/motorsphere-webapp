@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-
-type DemoUser = { email: string; role: string; name: string };
+import { useAuth } from '@/hooks/useAuth';
 
 type Service = {
   name: string;
@@ -22,15 +21,8 @@ const SERVICES: Service[] = [
 ];
 
 export default function WorkshopPage() {
-  const [user, setUser] = useState<DemoUser | null>(null);
+  const { user } = useAuth();
   const [rmiApplied, setRmiApplied] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
 
   if (!user) return null;
 

@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-
-type DemoUser = { email: string; role: string; name: string };
+import { useAuth } from '@/hooks/useAuth';
 
 type Inquiry = {
   id: string;
@@ -61,17 +60,10 @@ const STATUS_BADGE: Record<Inquiry['status'], { bg: string; text: string; label:
 };
 
 export default function InquiriesPage() {
-  const [user, setUser]             = useState<DemoUser | null>(null);
-  const [selected, setSelected]     = useState<string | null>(null);
-  const [replyText, setReplyText]   = useState('');
-  const [inquiries, setInquiries]   = useState<Inquiry[]>(DEMO_INQUIRIES);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
+  const { user } = useAuth();
+  const [selected, setSelected]   = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [inquiries, setInquiries] = useState<Inquiry[]>(DEMO_INQUIRIES);
 
   const sendReply = (id: string) => {
     if (!replyText.trim()) return;

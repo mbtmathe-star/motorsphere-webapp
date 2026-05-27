@@ -1,46 +1,69 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { updateUserProfile } from '@/lib/firebase/users';
+import type { AccountType } from '@/types/firestore.types';
 
-type DemoUser = { email: string; role: string; name: string };
+const ROLE_LABELS: Record<AccountType, string> = {
+  buyer:          'Buyer',
+  private_seller: 'Private Seller',
+  dealer:         'Dealer',
+  parts_vendor:   'Parts Vendor',
+  workshop:       'Workshop',
+  admin_preview:  'Admin Preview',
+};
 
 export default function ProfilePage() {
-  const [user, setUser]     = useState<DemoUser | null>(null);
-  const [saved, setSaved]   = useState(false);
-  const [name, setName]     = useState('');
-  const [phone, setPhone]   = useState('');
-  const [city, setCity]     = useState('');
-  const [bio, setBio]       = useState('');
+  const { user, profile } = useAuth();
 
+  const [saving, setSaving] = useState(false);
+  const [saved,  setSaved]  = useState(false);
+  const [error,  setError]  = useState<string | null>(null);
+
+  // Form fields — pre-filled from Firestore profile
+  const [displayName, setDisplayName] = useState('');
+  const [phone,       setPhone]       = useState('');
+  const [city,        setCity]        = useState('');
+  const [bio,         setBio]         = useState('');
+
+  // Pre-fill form when profile loads
   useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try {
-        const u = JSON.parse(stored) as DemoUser;
-        setUser(u);
-        setName(u.name);
-      } catch { /* ignore */ }
+    if (profile) {
+      setDisplayName(profile.displayName ?? '');
+      setPhone(profile.phone ?? '');
+      setCity(profile.province ?? '');
+      setBio(profile.bio ?? '');
     }
-  }, []);
+  }, [profile]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await new Promise(r => setTimeout(r, 800));
-    if (user) {
-      const updated = { ...user, name };
-      localStorage.setItem('ms_demo_user', JSON.stringify(updated));
-      setUser(updated);
+    if (!user) return;
+    setError(null);
+    setSaving(true);
+    try {
+      await updateUserProfile(user.uid, {
+        displayName,
+        phone:    phone || null,
+        province: city   || null,
+        bio:      bio    || null,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setError('Unable to save changes. Please try again.');
+    } finally {
+      setSaving(false);
     }
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
   };
 
   if (!user) return null;
 
-  const ROLE_LABELS: Record<string, string> = {
-    buyer: 'Buyer', seller: 'Private Seller', dealer: 'Dealer',
-    vendor: 'Parts Vendor', workshop: 'Workshop', admin: 'Administrator',
-  };
+  const email       = profile?.email     ?? user.email    ?? '';
+  const name        = profile?.displayName ?? displayName ?? 'User';
+  const accountType = profile?.accountType;
+  const roleLabel   = accountType ? ROLE_LABELS[accountType] : 'Member';
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -59,21 +82,30 @@ export default function ProfilePage() {
         </div>
         <div>
           <p className="font-black text-gray-900">{name}</p>
-          <p className="text-sm text-gray-500">{user.email}</p>
+          <p className="text-sm text-gray-500">{email}</p>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
-              {ROLE_LABELS[user.role] ?? user.role}
+              {roleLabel}
             </span>
-            <span className="text-[11px] text-gray-400">Demo account</span>
+            {profile?.isVerified && (
+              <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                ✓ Verified
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Success toast */}
+      {/* Feedback banners */}
       {saved && (
         <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center gap-2">
           <span className="text-green-600">✅</span>
           <p className="text-sm font-bold text-green-700">Profile updated successfully.</p>
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+          <p className="text-sm font-bold text-red-700">{error}</p>
         </div>
       )}
 
@@ -87,8 +119,8 @@ export default function ProfilePage() {
             <input
               required
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-[#0866ff]"
             />
           </div>
@@ -96,7 +128,7 @@ export default function ProfilePage() {
             <label className="block text-xs font-black text-gray-700 mb-1">Email Address</label>
             <input
               type="email"
-              value={user.email}
+              value={email}
               disabled
               className="w-full border border-gray-100 rounded-lg px-3 py-2.5 text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
             />
@@ -115,7 +147,7 @@ export default function ProfilePage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-black text-gray-700 mb-1">City</label>
+            <label className="block text-xs font-black text-gray-700 mb-1">Province / City</label>
             <input
               type="text"
               value={city}
@@ -139,20 +171,21 @@ export default function ProfilePage() {
 
         <button
           type="submit"
-          className="px-6 py-2.5 rounded-lg text-sm font-black text-white hover:opacity-90 transition-opacity"
+          disabled={saving}
+          className="px-6 py-2.5 rounded-lg text-sm font-black text-white hover:opacity-90 transition-opacity disabled:opacity-60"
           style={{ background: '#0866ff' }}
         >
-          Save Changes
+          {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </form>
 
-      {/* Danger zone */}
+      {/* Account settings */}
       <div className="bg-white rounded-xl border border-red-100 p-5 space-y-3">
         <h2 className="text-sm font-black text-red-600">Account Settings</h2>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-bold text-gray-800">Change Password</p>
-            <p className="text-xs text-gray-500">Send a reset link to {user.email}</p>
+            <p className="text-xs text-gray-500">Send a password reset link to {email}</p>
           </div>
           <button className="text-xs font-bold text-[#0866ff] hover:underline">Send link</button>
         </div>

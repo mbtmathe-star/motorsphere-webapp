@@ -1,28 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
-type DemoUser = { email: string; role: string; name: string };
+import { useAuth } from '@/hooks/useAuth';
+import { toNavKey } from '@/lib/accountType';
 
 type FormData = {
-  title: string;
-  type: string;
-  price: string;
-  location: string;
-  description: string;
-  mileage: string;
-  condition: string;
+  title:         string;
+  type:          string;
+  price:         string;
+  location:      string;
+  description:   string;
+  mileage:       string;
+  condition:     string;
   contactNumber: string;
 };
 
-const LISTING_TYPES_BY_ROLE: Record<string, string[]> = {
+const LISTING_TYPES_BY_NAV_KEY: Record<string, string[]> = {
   seller:   ['Vehicle', 'Bakkie', 'Truck'],
   dealer:   ['Vehicle', 'Bakkie', 'Truck', 'Bus', 'Motorcycle'],
   vendor:   ['Part', 'Spare', 'Tyre', 'Accessory'],
   workshop: ['Service', 'Package'],
   buyer:    ['Vehicle'],
+  admin:    ['Vehicle', 'Part', 'Service'],
 };
 
 const LOCATIONS = [
@@ -31,22 +31,14 @@ const LOCATIONS = [
 ];
 
 export default function NewListingPage() {
-  const [user, setUser]       = useState<DemoUser | null>(null);
-  const [step, setStep]       = useState<'form' | 'success'>('form');
+  const { user, profile } = useAuth();
+  const [step,      setStep]  = useState<'form' | 'success'>('form');
   const [submitting, setSub]  = useState(false);
-  const router                = useRouter();
 
   const [form, setForm] = useState<FormData>({
     title: '', type: '', price: '', location: '', description: '',
     mileage: '', condition: 'Used', contactNumber: '',
   });
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ms_demo_user');
-    if (stored) {
-      try { setUser(JSON.parse(stored) as DemoUser); } catch { /* ignore */ }
-    }
-  }, []);
 
   const update = (k: keyof FormData, v: string) =>
     setForm(f => ({ ...f, [k]: v }));
@@ -54,6 +46,7 @@ export default function NewListingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSub(true);
+    // Listing creation will connect to Firestore in a later base
     await new Promise(r => setTimeout(r, 1200));
     setSub(false);
     setStep('success');
@@ -61,8 +54,9 @@ export default function NewListingPage() {
 
   if (!user) return null;
 
-  const types = LISTING_TYPES_BY_ROLE[user.role] ?? ['Vehicle'];
-  const isService = user.role === 'workshop';
+  const navKey    = toNavKey(profile?.accountType);
+  const types     = LISTING_TYPES_BY_NAV_KEY[navKey] ?? ['Vehicle'];
+  const isService = navKey === 'workshop';
 
   if (step === 'success') {
     return (
@@ -97,7 +91,10 @@ export default function NewListingPage() {
               View My Listings
             </Link>
             <button
-              onClick={() => { setStep('form'); setForm({ title:'',type:'',price:'',location:'',description:'',mileage:'',condition:'Used',contactNumber:'' }); }}
+              onClick={() => {
+                setStep('form');
+                setForm({ title:'',type:'',price:'',location:'',description:'',mileage:'',condition:'Used',contactNumber:'' });
+              }}
               className="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
             >
               Add Another
@@ -185,7 +182,7 @@ export default function NewListingPage() {
               className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:border-[#0866ff]"
             />
           </div>
-          {!isService && user.role !== 'vendor' && (
+          {!isService && navKey !== 'vendor' && (
             <div>
               <label className="block text-xs font-black text-gray-700 mb-1">Mileage (km)</label>
               <input
@@ -227,7 +224,7 @@ export default function NewListingPage() {
           />
         </div>
 
-        {/* Images placeholder */}
+        {/* Images */}
         <div>
           <label className="block text-xs font-black text-gray-700 mb-1">Photos</label>
           <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
