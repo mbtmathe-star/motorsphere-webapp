@@ -232,8 +232,8 @@ export default function NewListingPage() {
           <label className="block text-xs font-black text-gray-700 mb-1">Photos</label>
           <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
             <div className="text-3xl mb-2">📸</div>
-            <p className="text-sm font-bold text-gray-500">Photo upload coming in Base 4</p>
-            <p className="text-xs text-gray-400 mt-1">Up to 10 images per listing (Firebase Storage)</p>
+            <p className="text-sm font-bold text-gray-500">Photo upload available after account verification</p>
+            <p className="text-xs text-gray-400 mt-1">Up to 10 images per listing — high quality photos improve buyer response rates</p>
           </div>
         </div>
 

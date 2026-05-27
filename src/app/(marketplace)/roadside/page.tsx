@@ -86,7 +86,7 @@ export default function RoadsidePage() {
         <div className="text-4xl mb-3">🗺️</div>
         <h2 className="text-lg font-black text-gray-700">Nationwide Coverage</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Interactive map coming in Base 4. We currently cover all 9 provinces.
+          MotorSphere roadside services cover all 9 South African provinces.
         </p>
         <div className="flex justify-center gap-4 flex-wrap mt-4">
           {['Gauteng', 'Western Cape', 'KwaZulu-Natal', 'Eastern Cape', 'Free State', 'Limpopo', 'North West', 'Mpumalanga', 'Northern Cape'].map(p => (

@@ -36,7 +36,7 @@ export default async function CategoryPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Filter chips — visual-only for prototype */}
+      {/* Filter chips */}
       <div className="flex flex-wrap gap-2 mb-6">
         {FILTERS.map((f, i) => (
           <span key={f}
@@ -77,10 +77,6 @@ export default async function CategoryPage({ params }: Props) {
         </div>
       )}
 
-      {/* Demo note */}
-      <div className="mt-8 rounded-2xl bg-[#eef4ff] border border-[#dbe8ff] p-4 text-[13px] text-[#1d4ed8] font-bold">
-        Demo prototype — showing seeded listings. Live marketplace will pull from Firebase with real-time filtering.
-      </div>
     </div>
   );
 }

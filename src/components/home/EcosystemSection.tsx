@@ -15,14 +15,14 @@ export default function EcosystemSection() {
       }}
     >
       <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[.14] text-white border border-white/[.16] text-[12px] font-black uppercase tracking-[.04em] mb-3">
-        Full ecosystem direction
+        Beyond buying and selling
       </span>
       <h2 className="m-0 mb-3 text-[clamp(30px,4vw,48px)] leading-none font-black tracking-[-0.045em]">
-        More than buying and selling cars.
+        South Africa&rsquo;s complete automotive ecosystem.
       </h2>
       <p className="m-0 mb-6 text-white/[.86] text-base leading-[1.7] max-w-[780px]">
-        MotorSphere is planned to connect the full ownership journey: finding vehicles, sourcing parts,
-        comparing insurance, booking services, handling emergencies and supporting commercial transport needs.
+        MotorSphere connects every part of your vehicle ownership journey — from finding a car and sourcing parts,
+        to comparing insurance, booking a workshop and getting roadside help when you need it most.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         {ecosystemServices.map(svc => (

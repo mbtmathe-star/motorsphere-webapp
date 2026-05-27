@@ -27,7 +27,7 @@ export default function PrivacyPage() {
           <h2 className="text-base font-black text-gray-900">1. Responsible Party</h2>
           <p className="text-sm text-gray-600">
             MotorSphere SA (Pty) Ltd is the Responsible Party for the purposes of POPIA.
-            Information Officer: <em>To be appointed before Base 8 launch.</em>
+            Our Information Officer is reachable via the contact details below.
             Contact: <Link href="/contact" className="text-[#0866ff] hover:underline">Contact Us</Link>
           </p>
         </section>

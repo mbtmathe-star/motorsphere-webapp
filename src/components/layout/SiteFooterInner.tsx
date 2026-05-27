@@ -24,7 +24,7 @@ export default function SiteFooterInner() {
             </Link>
           ))}
         </nav>
-        <p className="text-white/40 text-xs">© 2025 local4u Group. Demo prototype.</p>
+        <p className="text-white/40 text-xs">© 2025 MotorSphere SA. All rights reserved.</p>
       </div>
     </footer>
   );

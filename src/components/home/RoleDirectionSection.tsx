@@ -6,13 +6,14 @@ export default function RoleDirectionSection() {
   return (
     <section className="mb-7 bg-white/[.96] border border-white/[.78] rounded-[26px] shadow-[0_12px_28px_rgba(15,23,42,.12)] p-[clamp(22px,4vw,42px)] overflow-hidden text-[#121826]">
       <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#eef4ff] text-[#0866ff] text-[12px] font-black uppercase tracking-[.04em] mb-3">
-        Role-based app direction
+        Built for every automotive user
       </span>
       <h2 className="m-0 mb-3 text-[clamp(30px,4vw,48px)] leading-none font-black tracking-[-0.045em] text-[#121826]">
-        Every user lands where their work starts.
+        Your platform, built around your role.
       </h2>
       <p className="m-0 mb-6 text-[#687589] text-base leading-[1.7] max-w-[780px]">
-        MotorSphere needs different dashboard experiences so users do not get lost after login.
+        Whether you are buying, selling, managing stock or offering services, MotorSphere gives you a dedicated
+        dashboard and the tools that match how you work in the automotive industry.
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         {roles.map(role => (

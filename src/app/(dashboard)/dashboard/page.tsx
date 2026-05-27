@@ -19,7 +19,7 @@ type HubConfig = {
 const HUBS: Record<string, HubConfig> = {
   buyer: {
     greeting: 'Welcome back',
-    desc: 'Browse listings, save your favourites, and send inquiries.',
+    desc: 'Track saved listings, manage inquiries and compare vehicles, parts and service providers.',
     primaryCta: 'Browse Vehicles',
     primaryHref: '/category/vehicles',
     secondaryCta: 'View Saved',
@@ -32,13 +32,13 @@ const HUBS: Record<string, HubConfig> = {
     quickLinks: [
       { label: 'Search for a Toyota',  href: '/search?q=toyota' },
       { label: 'Browse parts',         href: '/category/parts' },
-      { label: 'Find a workshop',      href: '/workshops' },
-      { label: 'Get insurance quote',  href: '/insurance' },
+      { label: 'Find a workshop near you', href: '/workshops' },
+      { label: 'Get a vehicle insurance quote', href: '/insurance' },
     ],
   },
   seller: {
     greeting: 'Seller Hub',
-    desc: 'Create listings, track approval status and respond to inquiries.',
+    desc: 'Create listings, upload vehicle details and track your approval status before going live.',
     primaryCta: 'Create Listing',
     primaryHref: '/listings/new',
     secondaryCta: 'View My Listings',
@@ -56,7 +56,7 @@ const HUBS: Record<string, HubConfig> = {
   },
   dealer: {
     greeting: 'Dealer Dashboard',
-    desc: 'Manage your stock, dealership profile, and leads from buyers.',
+    desc: 'Manage dealership stock, leads, business information and verification status on MotorSphere.',
     primaryCta: 'Add Stock',
     primaryHref: '/listings/new',
     secondaryCta: 'View Stock',
@@ -74,7 +74,7 @@ const HUBS: Record<string, HubConfig> = {
   },
   vendor: {
     greeting: 'Parts Vendor Hub',
-    desc: 'Manage your inventory, compatibility and respond to quote requests.',
+    desc: 'Manage parts inventory, compatibility details, inquiries and your supplier visibility on MotorSphere.',
     primaryCta: 'Add Part',
     primaryHref: '/listings/new',
     secondaryCta: 'Manage Inventory',
@@ -92,7 +92,7 @@ const HUBS: Record<string, HubConfig> = {
   },
   workshop: {
     greeting: 'Workshop Dashboard',
-    desc: 'Manage your services, RMI badge status and incoming bookings.',
+    desc: 'Manage services, quote requests, RMI status and customer leads. Build your automotive service profile on MotorSphere.',
     primaryCta: 'Manage Services',
     primaryHref: '/workshop',
     secondaryCta: 'View Bookings',
@@ -110,7 +110,7 @@ const HUBS: Record<string, HubConfig> = {
   },
   admin: {
     greeting: 'Admin Panel',
-    desc: 'Moderate listings, manage verifications and review platform activity.',
+    desc: 'Review listings, approve or reject submissions, monitor flagged content and support marketplace integrity.',
     primaryCta: 'Go to Moderation',
     primaryHref: '/admin',
     secondaryCta: 'View Audit Log',

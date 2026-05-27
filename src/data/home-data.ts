@@ -165,48 +165,48 @@ export const trustCards = [
   {
     icon: 'shield',
     title: 'Verified listings',
-    desc: 'Admin approval, seller checks and safer marketplace visibility baked in from day one.',
+    desc: 'Every listing is reviewed by our admin team before going live. Seller identity checks and marketplace screening keep buyers protected.',
   },
   {
     icon: 'lock',
     title: 'POPIA-conscious',
-    desc: 'Consent-driven flows, restricted document access and privacy-first user journeys.',
+    desc: 'Consent-driven registration, restricted access to sensitive documents and privacy-first data handling aligned with South African law.',
   },
   {
     icon: 'layout',
-    title: 'Role dashboards',
-    desc: 'Different starting points for buyers, sellers, dealers, vendors and workshops.',
+    title: 'Role-based dashboards',
+    desc: 'Dedicated portals for buyers, private sellers, dealerships, parts vendors and workshops — each built for how you actually work.',
   },
   {
     icon: 'phone',
-    title: 'Lead flow ready',
-    desc: 'Inquiries, insurance quote requests and service bookings prepared for Firebase.',
+    title: 'Secure inquiries',
+    desc: 'All buyer–seller communication stays on-platform until both parties are ready. Your contact details remain protected throughout.',
   },
 ];
 
 export const ecosystemServices = [
   {
     icon: 'shield',
-    title: 'Insurance quotes',
-    desc: 'Lead flow for policy comparison and partner routing.',
+    title: 'Vehicle Insurance',
+    desc: 'Compare vehicle insurance options and get quotes from trusted South African providers.',
     route: '/insurance',
   },
   {
     icon: 'emergency',
-    title: 'Roadside help',
-    desc: 'Towing and emergency assistance entry points.',
+    title: 'Roadside Assistance',
+    desc: 'Access towing and emergency roadside support anywhere in South Africa, 24 hours a day.',
     route: '/roadside',
   },
   {
     icon: 'hardhat',
     title: 'Workshops',
-    desc: 'RMI and independent service provider directory.',
+    desc: 'Find RMI-accredited and independent service providers, mechanics and bodyshops near you.',
     route: '/workshops',
   },
   {
     icon: 'car',
     title: 'Auctions',
-    desc: 'Future auction flow for vehicles, parts and spares.',
+    desc: 'Bid on vehicles, parts and salvage lots from verified sellers. Auction listings coming soon.',
     route: '/auctions',
   },
 ];
@@ -214,32 +214,32 @@ export const ecosystemServices = [
 export const howItWorksSteps = [
   {
     step: 1,
-    title: 'Create profile',
-    desc: 'Register by role: buyer, seller, dealer, vendor, workshop or admin.',
+    title: 'Create your profile',
+    desc: 'Register as a buyer, seller, dealer, parts vendor or workshop. Your role shapes your dashboard and available features.',
   },
   {
     step: 2,
-    title: 'Submit listing',
-    desc: 'Add details, photos, location, pricing and compatibility information.',
+    title: 'List or browse',
+    desc: 'Sellers add vehicle details, photos, pricing and location. Buyers search and filter across verified listings nationwide.',
   },
   {
     step: 3,
-    title: 'Admin review',
-    desc: 'Listings move through pending, approved, rejected, sold or expired states.',
+    title: 'Admin screening',
+    desc: 'Every listing is reviewed by our moderation team before it becomes publicly visible. Quality control is built in.',
   },
   {
     step: 4,
-    title: 'Connect safely',
-    desc: 'Buyers inquire, save, report or compare through tracked platform flows.',
+    title: 'Connect with confidence',
+    desc: 'Buyers inquire, save and compare. Sellers respond through the platform. All interactions stay traceable and secure.',
   },
 ];
 
 export const roles = [
-  { id: 'buyer',    title: 'Buyer',          desc: 'Save, inquire, compare and browse.', route: '/register' },
-  { id: 'seller',   title: 'Private seller', desc: 'Create listings and track approval.', route: '/register' },
-  { id: 'dealer',   title: 'Dealer',         desc: 'Manage stock, business profile and leads.', route: '/register' },
-  { id: 'vendor',   title: 'Parts vendor',   desc: 'Manage parts inventory and compatibility.', route: '/register' },
-  { id: 'workshop', title: 'Workshop',       desc: 'Service directory, quote and booking leads.', route: '/register' },
+  { id: 'buyer',    title: 'Buyer',          desc: 'Search verified listings, save favourites, send inquiries and compare vehicles, parts and services.', route: '/register' },
+  { id: 'seller',   title: 'Private Seller', desc: 'Create listings, upload vehicle details and track your approval status before going live.', route: '/register' },
+  { id: 'dealer',   title: 'Dealer',         desc: 'Manage dealership stock, leads, business verification and your storefront on MotorSphere.', route: '/register' },
+  { id: 'vendor',   title: 'Parts Vendor',   desc: 'List parts and spares, manage inventory, set compatibility details and respond to buyer inquiries.', route: '/register' },
+  { id: 'workshop', title: 'Workshop',       desc: 'Advertise your services, receive booking requests, display your RMI status and build customer trust.', route: '/register' },
 ];
 
 // More seeded listings for category pages / search

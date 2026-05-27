@@ -18,12 +18,12 @@ export default function AuctionsPage() {
       >
         <div className="text-6xl mb-4">🔨</div>
         <div className="inline-block bg-white/10 text-white/80 text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full mb-3">
-          Coming Soon — Base 4
+          Coming Soon
         </div>
         <h1 className="text-3xl font-black">MotorSphere Auctions</h1>
         <p className="text-white/70 mt-2 text-sm max-w-lg mx-auto">
-          Bid on vehicles, parts and salvage lots from verified sellers.
-          Live auction engine coming in the next development stage.
+          Bid on vehicles, parts and salvage lots from verified sellers across South Africa.
+          Register your interest and be first to access when auctions go live.
         </p>
         <div className="flex items-center justify-center gap-4 mt-6 flex-wrap">
           {[
@@ -62,7 +62,7 @@ export default function AuctionsPage() {
       {/* Preview listings */}
       <div>
         <h2 className="text-lg font-black text-gray-900 mb-4">
-          Preview — Listings that could go to auction
+          Listings Available on MotorSphere
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {PREVIEW_LISTINGS.map(listing => (
@@ -75,14 +75,14 @@ export default function AuctionsPage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={listing.image} alt={listing.title} className="w-full h-36 object-cover" />
                 <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
-                  Auction TBA
+                  Available Now
                 </div>
               </div>
               <div className="p-4">
                 <p className="text-sm font-black text-gray-900 truncate">{listing.title}</p>
                 <p className="text-xs text-gray-500 mt-0.5">{listing.location}</p>
                 <p className="text-sm font-black mt-2" style={{ color: '#0866ff' }}>
-                  Estimate: {listing.priceDisplay}
+                  {listing.priceDisplay}
                 </p>
               </div>
             </Link>

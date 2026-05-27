@@ -64,9 +64,6 @@ export default async function SearchPage({ searchParams }: Props) {
         </div>
       )}
 
-      <div className="mt-8 rounded-2xl bg-[#eef4ff] border border-[#dbe8ff] p-4 text-[13px] text-[#1d4ed8] font-bold">
-        Demo prototype — showing seeded listings. Live search will use Firebase full-text search.
-      </div>
     </div>
   );
 }

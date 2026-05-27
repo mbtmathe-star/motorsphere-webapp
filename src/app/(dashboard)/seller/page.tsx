@@ -62,7 +62,7 @@ export default function SellerPage() {
         <div>
           <h1 className="text-2xl font-black text-gray-900">My Listings</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Track your listings through the approval process.
+            Create listings, upload vehicle details and track approval status before your listing goes live.
           </p>
         </div>
         <Link

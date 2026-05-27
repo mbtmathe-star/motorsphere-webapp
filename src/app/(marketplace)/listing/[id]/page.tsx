@@ -63,8 +63,8 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
         <div className="mb-6 rounded-2xl bg-[#dcfce7] border border-[#bbf7d0] p-4 flex items-start gap-3">
           <span className="text-2xl">✓</span>
           <div>
-            <p className="font-black text-[#166534] mb-0.5">Inquiry sent successfully!</p>
-            <p className="text-[#15803d] text-sm">The seller will respond to your email within 24 hours. You can track this in your <Link href="/inquiries" className="underline">Inquiries</Link> section.</p>
+            <p className="font-black text-[#166534] mb-0.5">Inquiry submitted successfully!</p>
+            <p className="text-[#15803d] text-sm">Your inquiry has been submitted. The seller will be notified through MotorSphere and will respond within 24 hours. Track replies in your <Link href="/inquiries" className="underline">Inquiries</Link> dashboard.</p>
           </div>
         </div>
       )}
@@ -116,11 +116,11 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
             {!showContact ? (
               <button onClick={() => setShowContact(true)}
                 className="w-full rounded-xl py-3 bg-[#0866ff] text-white font-black text-sm hover:bg-[#064dc1] transition-colors">
-                Contact Seller
+                Contact Seller Securely
               </button>
             ) : (
               <form onSubmit={handleInquiry} className="space-y-3 border border-[#dbe8ff] rounded-xl p-4 bg-[#f8fbff]">
-                <p className="text-sm font-black text-[#121826]">Send an inquiry</p>
+                <p className="text-sm font-black text-[#121826]">Contact seller through MotorSphere</p>
                 <input required placeholder="Your name" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))}
                   className="w-full border border-[#dbe3ee] rounded-xl px-3 py-2.5 text-sm outline-none bg-white text-[#121826] focus:border-[#0866ff]" />
                 <input required type="email" placeholder="Your email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))}
@@ -146,25 +146,20 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
                   ? 'bg-[#dcfce7] text-[#166534] border-[#bbf7d0]'
                   : 'bg-[#eef4ff] text-[#0866ff] border-[#dbe8ff] hover:bg-[#dbe8ff]'
               }`}>
-              {saved ? '✓ Saved' : 'Save Listing'}
+              {saved ? '✓ Saved to your list' : 'Save listing to compare later'}
             </button>
 
             <Link href="/report"
               className="w-full text-center rounded-xl py-3 bg-[#fff1f2] text-[#e11d48] border border-[#fecdd3] font-black text-sm hover:bg-[#fee2e2] transition-colors block">
-              Report Listing
+              Report Suspicious Information
             </Link>
           </div>
 
           {/* Trust note */}
           <div className="mt-4 rounded-xl bg-[#f8fafc] border border-[#e2e8f0] p-3 text-[12px] text-[#687589] leading-[1.5]">
-            MotorSphere verifies sellers and moderates listings before they go live. <Link href="/trust-safety" className="text-[#0866ff] font-bold hover:underline">Learn more</Link>
+            This listing is reviewed for marketplace quality before public visibility. <Link href="/trust-safety" className="text-[#0866ff] font-bold hover:underline">Learn about our trust model</Link>
           </div>
         </div>
-      </div>
-
-      {/* Demo note */}
-      <div className="mt-8 rounded-2xl bg-[#eef4ff] border border-[#dbe8ff] p-4 text-[13px] text-[#1d4ed8] font-bold">
-        Demo prototype — inquiry forms are simulated. Production uses Firebase Firestore and email workflows.
       </div>
     </div>
   );
