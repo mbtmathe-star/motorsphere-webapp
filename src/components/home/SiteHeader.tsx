@@ -289,8 +289,8 @@ export default function SiteHeader() {
                 }}
                 title={cat.desc}
               >
-                <span className="w-[38px] h-[38px] mb-2.5 drop-shadow-[0_2px_6px_rgba(0,0,0,.35)]">
-                  <Icon name={cat.icon} className="w-full h-full" />
+                <span className="text-[2rem] mb-2 leading-none drop-shadow-[0_2px_6px_rgba(0,0,0,.35)]">
+                  {cat.emoji}
                 </span>
                 <span className="text-sm leading-[1.2] drop-shadow-[0_1px_3px_rgba(0,0,0,.4)]">{cat.label}</span>
               </Link>

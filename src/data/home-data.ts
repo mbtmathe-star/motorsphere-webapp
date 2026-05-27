@@ -35,23 +35,24 @@ export type Category = {
   label: string;
   color: string;
   icon: string;
+  emoji: string;
   desc: string;
 };
 
 export const categories: Category[] = [
-  { id: 'vehicles',           label: 'Vehicle Search',    color: '#0866ff', icon: 'car',       desc: 'Browse verified private and dealer vehicle listings.' },
-  { id: 'trucks-buses',       label: 'Trucks & Buses',    color: '#40586d', icon: 'truck',     desc: 'Commercial vehicles, bakkies, trucks and buses.' },
-  { id: 'parts',              label: 'Parts',             color: '#06b351', icon: 'key',       desc: 'New and used parts for different makes and models.' },
-  { id: 'spares',             label: 'Spares',            color: '#ff3d0a', icon: 'package',   desc: 'Spares, components and replacement items.' },
-  { id: 'tyres',              label: 'Tyres',             color: '#40586d', icon: 'tyre',      desc: 'Tyres, wheels and fitment services.' },
-  { id: 'panelbeaters',       label: 'Panelbeaters',      color: '#df8a00', icon: 'wrench',    desc: 'Bodywork, repairs and accident restoration.' },
-  { id: 'tracking',           label: 'Vehicle Tracking',  color: '#069b83', icon: 'tracking',  desc: 'Tracking and fleet visibility solutions.' },
-  { id: 'dealerships',        label: 'Dealerships',       color: '#ff0707', icon: 'shop',      desc: 'Registered dealership profiles and stock.' },
-  { id: 'insurance',          label: 'Vehicle Insurance', color: '#0899b8', icon: 'shield',    desc: 'Quote requests and policy comparison.' },
-  { id: 'rmi-workshops',      label: 'RMI Workshops',     color: '#4a35f5', icon: 'hardhat',   desc: 'RMI-aligned workshops and service providers.' },
-  { id: 'mechanics',          label: 'Non RMI Mechanic',  color: '#069b83', icon: 'settings',  desc: 'Independent mechanics and repair providers.' },
-  { id: 'towing',             label: 'Towing Services',   color: '#df8a00', icon: 'tow',       desc: 'Towing, recovery and roadside support.' },
-  { id: 'emergency-roadside', label: 'Emergency Roadside',color: '#ff003b', icon: 'emergency', desc: '24/7 emergency roadside assistance.' },
+  { id: 'vehicles',           label: 'Vehicle Search',    color: '#0866ff', icon: 'car',       emoji: '🚗',  desc: 'Browse verified private and dealer vehicle listings.' },
+  { id: 'trucks-buses',       label: 'Trucks & Buses',    color: '#40586d', icon: 'truck',     emoji: '🚛',  desc: 'Commercial vehicles, bakkies, trucks and buses.' },
+  { id: 'parts',              label: 'Parts',             color: '#06b351', icon: 'key',       emoji: '🔧',  desc: 'New and used parts for different makes and models.' },
+  { id: 'spares',             label: 'Spares',            color: '#ff3d0a', icon: 'package',   emoji: '⚙️',  desc: 'Spares, components and replacement items.' },
+  { id: 'tyres',              label: 'Tyres',             color: '#40586d', icon: 'tyre',      emoji: '🛞',  desc: 'Tyres, wheels and fitment services.' },
+  { id: 'panelbeaters',       label: 'Panelbeaters',      color: '#df8a00', icon: 'wrench',    emoji: '🔨',  desc: 'Bodywork, repairs and accident restoration.' },
+  { id: 'tracking',           label: 'Vehicle Tracking',  color: '#069b83', icon: 'tracking',  emoji: '📡',  desc: 'Tracking and fleet visibility solutions.' },
+  { id: 'dealerships',        label: 'Dealerships',       color: '#ff0707', icon: 'shop',      emoji: '🏢',  desc: 'Registered dealership profiles and stock.' },
+  { id: 'insurance',          label: 'Vehicle Insurance', color: '#0899b8', icon: 'shield',    emoji: '🛡️',  desc: 'Quote requests and policy comparison.' },
+  { id: 'rmi-workshops',      label: 'RMI Workshops',     color: '#4a35f5', icon: 'hardhat',   emoji: '🏅',  desc: 'RMI-aligned workshops and service providers.' },
+  { id: 'mechanics',          label: 'Non RMI Mechanic',  color: '#069b83', icon: 'settings',  emoji: '🪛',  desc: 'Independent mechanics and repair providers.' },
+  { id: 'towing',             label: 'Towing Services',   color: '#df8a00', icon: 'tow',       emoji: '🪝',  desc: 'Towing, recovery and roadside support.' },
+  { id: 'emergency-roadside', label: 'Emergency Roadside',color: '#ff003b', icon: 'emergency', emoji: '🚨',  desc: '24/7 emergency roadside assistance.' },
 ];
 
 export type StatusVariant = 'green' | 'blue' | 'orange' | 'red' | 'purple';
