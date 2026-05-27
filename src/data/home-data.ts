@@ -36,23 +36,80 @@ export type Category = {
   color: string;
   icon: string;
   emoji: string;
+  image: string;
   desc: string;
 };
 
+// Unsplash photos — each one chosen to visually represent the category
+const U = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=400&q=75`;
+
 export const categories: Category[] = [
-  { id: 'vehicles',           label: 'Vehicle Search',    color: '#0866ff', icon: 'car',       emoji: '🚗',  desc: 'Browse verified private and dealer vehicle listings.' },
-  { id: 'trucks-buses',       label: 'Trucks & Buses',    color: '#40586d', icon: 'truck',     emoji: '🚛',  desc: 'Commercial vehicles, bakkies, trucks and buses.' },
-  { id: 'parts',              label: 'Parts',             color: '#06b351', icon: 'key',       emoji: '🔧',  desc: 'New and used parts for different makes and models.' },
-  { id: 'spares',             label: 'Spares',            color: '#ff3d0a', icon: 'package',   emoji: '⚙️',  desc: 'Spares, components and replacement items.' },
-  { id: 'tyres',              label: 'Tyres',             color: '#40586d', icon: 'tyre',      emoji: '🛞',  desc: 'Tyres, wheels and fitment services.' },
-  { id: 'panelbeaters',       label: 'Panelbeaters',      color: '#df8a00', icon: 'wrench',    emoji: '🔨',  desc: 'Bodywork, repairs and accident restoration.' },
-  { id: 'tracking',           label: 'Vehicle Tracking',  color: '#069b83', icon: 'tracking',  emoji: '📡',  desc: 'Tracking and fleet visibility solutions.' },
-  { id: 'dealerships',        label: 'Dealerships',       color: '#ff0707', icon: 'shop',      emoji: '🏢',  desc: 'Registered dealership profiles and stock.' },
-  { id: 'insurance',          label: 'Vehicle Insurance', color: '#0899b8', icon: 'shield',    emoji: '🛡️',  desc: 'Quote requests and policy comparison.' },
-  { id: 'rmi-workshops',      label: 'RMI Workshops',     color: '#4a35f5', icon: 'hardhat',   emoji: '🏅',  desc: 'RMI-aligned workshops and service providers.' },
-  { id: 'mechanics',          label: 'Non RMI Mechanic',  color: '#069b83', icon: 'settings',  emoji: '🪛',  desc: 'Independent mechanics and repair providers.' },
-  { id: 'towing',             label: 'Towing Services',   color: '#df8a00', icon: 'tow',       emoji: '🪝',  desc: 'Towing, recovery and roadside support.' },
-  { id: 'emergency-roadside', label: 'Emergency Roadside',color: '#ff003b', icon: 'emergency', emoji: '🚨',  desc: '24/7 emergency roadside assistance.' },
+  {
+    id: 'vehicles', label: 'Vehicle Search', color: '#0866ff', icon: 'car', emoji: '🚗',
+    image: U('1492144534655-ae79c964c9d7'),   // silver sports car on road
+    desc: 'Browse verified private and dealer vehicle listings.',
+  },
+  {
+    id: 'trucks-buses', label: 'Trucks & Buses', color: '#40586d', icon: 'truck', emoji: '🚛',
+    image: U('1601584115197-04f9838f4bef'),   // truck on highway
+    desc: 'Commercial vehicles, bakkies, trucks and buses.',
+  },
+  {
+    id: 'parts', label: 'Parts', color: '#06b351', icon: 'key', emoji: '🔧',
+    image: U('1486262715619-67b85e0b08d3'),   // car engine close-up
+    desc: 'New and used parts for different makes and models.',
+  },
+  {
+    id: 'spares', label: 'Spares', color: '#ff3d0a', icon: 'package', emoji: '⚙️',
+    image: U('1530046339160-ce3e530c7d2f'),   // mechanical components
+    desc: 'Spares, components and replacement items.',
+  },
+  {
+    id: 'tyres', label: 'Tyres', color: '#40586d', icon: 'tyre', emoji: '🛞',
+    image: U('1558618666-fcd25c85cd64'),      // tyre close-up
+    desc: 'Tyres, wheels and fitment services.',
+  },
+  {
+    id: 'panelbeaters', label: 'Panelbeaters', color: '#df8a00', icon: 'wrench', emoji: '🔨',
+    image: U('1609521263047-f8f205293f24'),   // car body repair / bodywork
+    desc: 'Bodywork, repairs and accident restoration.',
+  },
+  {
+    id: 'tracking', label: 'Vehicle Tracking', color: '#069b83', icon: 'tracking', emoji: '📡',
+    image: U('1502920917128-1aa500764cbd'),   // car dashboard / navigation
+    desc: 'Tracking and fleet visibility solutions.',
+  },
+  {
+    id: 'dealerships', label: 'Dealerships', color: '#ff0707', icon: 'shop', emoji: '🏢',
+    image: U('1560958089-b8a1929cea89'),      // car showroom interior
+    desc: 'Registered dealership profiles and stock.',
+  },
+  {
+    id: 'insurance', label: 'Vehicle Insurance', color: '#0899b8', icon: 'shield', emoji: '🛡️',
+    image: U('1560518883-ce09059eeffa'),      // car keys on document
+    desc: 'Quote requests and policy comparison.',
+  },
+  {
+    id: 'rmi-workshops', label: 'RMI Workshops', color: '#4a35f5', icon: 'hardhat', emoji: '🏅',
+    image: U('1565043589221-1a6fd9ae45c7'),   // professional garage / workshop
+    desc: 'RMI-aligned workshops and service providers.',
+  },
+  {
+    id: 'mechanics', label: 'Non RMI Mechanic', color: '#069b83', icon: 'settings', emoji: '🪛',
+    image: U('1537462715879-360eeb61a0ad'),   // mechanic working on engine
+    desc: 'Independent mechanics and repair providers.',
+  },
+  {
+    id: 'towing', label: 'Towing Services', color: '#df8a00', icon: 'tow', emoji: '🪝',
+    image: U('1449965408869-eaa3f722e40d'),   // road at night / tow truck
+    desc: 'Towing, recovery and roadside support.',
+  },
+  {
+    id: 'emergency-roadside', label: 'Emergency Roadside', color: '#ff003b', icon: 'emergency', emoji: '🚨',
+    image: U('1587815073078-f636169821e3'),   // roadside emergency / warning lights
+    desc: '24/7 emergency roadside assistance.',
+  },
 ];
 
 export type StatusVariant = 'green' | 'blue' | 'orange' | 'red' | 'purple';
