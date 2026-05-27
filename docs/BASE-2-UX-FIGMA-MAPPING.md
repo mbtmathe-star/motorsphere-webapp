@@ -25,6 +25,9 @@
 
 ---
 
+
+---
+
 ## Table of Contents
 
 1. [Figma Handoff Checklist](#1-figma-handoff-checklist)

@@ -33,7 +33,8 @@ Three paths were proposed for what to build next:
 ```
 ✓ Firebase Emulator running locally (Auth + Firestore + Storage + Functions)
 ✓ Firebase client SDK + Admin SDK initialised in correct Next.js locations
-✓ Security Rules written and tested against emulator
+✓ Firestore Security Rules written and tested against emulator
+✓ Firebase Storage Security Rules written and tested against emulator
 ✓ Composite indexes deployed to firestore.indexes.json
 ✓ Session cookie auth pattern working end-to-end
 ✓ shadcn/ui installed and dark theme configured
@@ -41,7 +42,7 @@ Three paths were proposed for what to build next:
 ✓ Folder structure locked (components/, lib/, types/, hooks/, utils/)
 ✓ TypeScript types for all Firestore document shapes
 ✓ GitHub Actions CI (lint + type-check + build)
-✓ Firebase App Hosting connected to GitHub
+✓ Firebase App Hosting connected to GitHub (deployment deferred)
 ✓ .env.local.example with all variable keys documented
 ✓ CLAUDE.md for AI-assisted development context
 ```
@@ -98,31 +99,37 @@ For **both** projects, enable the following in the Firebase Console:
 Authentication
   ✓ Enable Email/Password provider
   ✓ Enable Email link (passwordless) — Phase 1b optional
-  ✓ Google provider — configure in Phase 1b
+  ✓ Google provider — configure in Phase 1b (NOT now)
+  ✗ Phone Auth — do NOT enable (not used at MVP)
   ✓ Set password minimum length: 8 characters
   ✓ Enable email enumeration protection (prevents user enumeration attacks)
 
 Firestore Database
+  ✓ Use the DEFAULT database (do NOT create named databases)
   ✓ Create database in production mode (rules will be written manually)
-  ✓ Location: europe-west (closest to South Africa; africa-south1 is available — choose based on latency)
-  ⚠️ Africa-south1 (Johannesburg) is available — strongly consider for SA users
+  ✓ Location: africa-south1 (Johannesburg) — lowest latency for SA users
+  ✓ Rules will be written manually
 
 Storage
   ✓ Enable Cloud Storage
-  ✓ Location: same as Firestore (africa-south1 if chosen)
+  ✓ Location: same as Firestore (africa-south1)
   ✓ Rules will be written manually
+  ✓ Set upload size limits (enforced in Storage Security Rules)
 
 Functions
-  ✓ Upgrade to Blaze plan (pay-as-you-go) — required for Cloud Functions
-  ✓ Functions deploy from functions/ directory
+  ✓ Blaze plan is required for deploying Cloud Functions to Google Cloud
+  ✓ For local development: Firebase Emulator runs Functions on any plan
+  ✓ Functions deploy from functions/ directory — deferred until needed
 
 App Hosting
-  ✓ Create an App Hosting backend
-  ✓ Link to GitHub repository
+  ✓ Create an App Hosting backend — deferred until app is ready for deployment
+  ✓ Link to GitHub repository when ready
   ✓ Set live branch to: main
 ```
 
-> **On region selection:** `africa-south1` (Johannesburg) is available on Firestore, Storage, and Cloud Functions. This will give SA users the lowest latency. The tradeoff is that `africa-south1` has fewer Google Cloud services available than `europe-west`. For MVP, `africa-south1` is recommended for Firestore and Storage. Functions can be `us-central1` or `europe-west1` if `africa-south1` has limitations.
+> **On region selection:** `africa-south1` (Johannesburg) is available for Firestore, Storage, and Cloud Functions. This gives SA users the lowest latency. Functions can be `us-central1` or `europe-west1` if `africa-south1` has limitations for specific Function triggers.
+>
+> **Firebase Blaze plan:** Required for Cloud Functions (deployed) and Firebase Storage write operations beyond free tier. The Emulator Suite runs all services locally on any plan.
 
 ---
 
@@ -143,7 +150,7 @@ firebase init
 #   ✓ Functions: Configure a Cloud Functions directory
 #   ✓ Storage: Configure a security rules file
 #   ✓ Emulators: Set up local emulators
-#   ✓ App Hosting: Configure App Hosting
+#   ✓ App Hosting: Configure App Hosting (deferred — configure now, deploy later)
 
 # When prompted for project: select motorsphere-staging as default
 ```
@@ -194,12 +201,12 @@ firebase use default    # switch back to staging (default)
 
 | Service | Usage | Why |
 |---|---|---|
-| **Firebase Auth** | User registration, login, email verification, password reset, session cookies | Built-in, integrates natively with Security Rules via `request.auth` |
-| **Cloud Firestore** | All application data — listings, users, inquiries, saves, flags | Scales automatically, Security Rules enforced at DB level, real-time capable |
-| **Firebase Storage** | Vehicle images, parts images, user avatars | CDN-served, Security Rules tied to Auth, same project |
-| **Cloud Functions** (2nd gen) | Auth triggers, Firestore triggers, email dispatch, admin operations | Serverless, collocated with Firebase project, triggered by events |
-| **Firebase App Hosting** | Next.js App Router SSR deployment | Native Next.js support, CDN, auto-scaling, GitHub integration |
-| **Firebase Emulator Suite** | Local development | Full offline Firebase stack, no cloud costs during dev |
+| **Firebase Auth** | User registration, login (Email/Password first), email verification, password reset, session cookies | Built-in, integrates natively with Security Rules via `request.auth` |
+| **Cloud Firestore** | All application data — listings, users, inquiries, saves, flags. Default database only. | Scales automatically, Security Rules enforced at DB level, real-time capable |
+| **Firebase Storage** | Vehicle images, parts images, user avatars, future verification documents | CDN-served, Security Rules tied to Auth, same project config as Firestore |
+| **Cloud Functions** (2nd gen) | Auth triggers, Firestore triggers, Storage triggers, email dispatch, admin operations | Serverless, collocated with Firebase project, triggered by events. Deferred until needed. |
+| **Firebase App Hosting** | Next.js App Router SSR deployment | Native Next.js support, CDN, auto-scaling, GitHub integration. Deferred until app ready. |
+| **Firebase Emulator Suite** | Local development | Full offline Firebase stack (Auth + Firestore + Storage + Functions), no cloud costs during dev |
 
 ### 2.2 — Services NOT Used (MVP)
 
@@ -259,7 +266,7 @@ Next.js middleware always runs in the Edge Runtime. This means:
 
 | Layer | Runtime | Firebase SDK | Can Do |
 |---|---|---|---|
-| `middleware.ts` | Edge Runtime | ❌ Admin SDK | Cookie presence check only |
+| `proxy.ts` (Next.js 16) | Edge Runtime | ❌ Admin SDK | Cookie presence check only |
 | `app/api/*/route.ts` | Node.js (default) | ✅ Admin SDK | Full verification, Firestore Admin |
 | `app/**/page.tsx` (Server Component) | Node.js | ✅ Admin SDK | SSR with Firestore data |
 | `src/components/**` (Client Component) | Browser | ✅ Client SDK | Firestore realtime, Auth state |
@@ -268,14 +275,14 @@ Next.js middleware always runs in the Edge Runtime. This means:
 **Middleware strategy — lightweight Edge-compatible check:**
 
 ```typescript
-// src/middleware.ts
+// src/proxy.ts  ← Next.js 16: middleware.ts renamed to proxy.ts; export named 'proxy'
 import { NextRequest, NextResponse } from 'next/server';
 
 const PROTECTED_PREFIXES = ['/dashboard', '/account'];
 const ADMIN_PREFIX = '/admin';
 const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const session = req.cookies.get('__session')?.value;
 
@@ -315,20 +322,21 @@ export const config = {
 
 ```typescript
 // src/app/(admin)/layout.tsx
-import { adminAuth } from '@/lib/firebase/admin';
+import { getAdminAuth } from '@/lib/firebase/admin';  // ← lazy factory function
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = (await cookies()).get('__session')?.value;
+  const cookieStore = await cookies();
+  const session = cookieStore.get('__session')?.value;
 
   if (!session) redirect('/login');
 
   try {
-    const decoded = await adminAuth.verifySessionCookie(session, true);
-    const role = decoded.role as string;
+    const decoded = await getAdminAuth().verifySessionCookie(session, true);
+    const role = decoded.role as string | undefined;
 
-    if (!['admin', 'super_admin'].includes(role)) {
+    if (!role || !['admin', 'super_admin'].includes(role)) {
       redirect('/dashboard'); // Authenticated but not admin
     }
   } catch {
@@ -381,18 +389,20 @@ if (
 }
 ```
 
-**`src/lib/firebase/admin.ts`** (Server Components, API routes, middleware — Node.js only):
+**`src/lib/firebase/admin.ts`** (Server Components, API routes — Node.js only):
 
 ```typescript
-import { getApps, getApp, initializeApp, cert } from 'firebase-admin/app';
+import { getApps, getApp, initializeApp, cert, App } from 'firebase-admin/app';
 import { getAuth }      from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage }   from 'firebase-admin/storage';
 
-function getAdminApp() {
-  if (getApps().length > 0) return getApp();
+let _app: App | undefined;
 
-  return initializeApp({
+function getAdminApp(): App {
+  if (_app) return _app;
+  if (getApps().length > 0) { _app = getApp(); return _app; }
+  _app = initializeApp({
     credential: cert({
       projectId:   process.env.FIREBASE_ADMIN_PROJECT_ID!,
       clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
@@ -400,14 +410,18 @@ function getAdminApp() {
     }),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
   });
+  return _app;
 }
 
-const adminApp     = getAdminApp();
-export const adminAuth    = getAuth(adminApp);
-export const adminDb      = getFirestore(adminApp);
-export const adminStorage = getStorage(adminApp);
+// Lazy factory functions — called at request time, NOT at module import time.
+// This prevents build-time failures when env vars contain placeholder values.
+export function getAdminAuth()    { return getAuth(getAdminApp()); }
+export function getAdminDb()      { return getFirestore(getAdminApp()); }
+export function getAdminStorage() { return getStorage(getAdminApp()); }
 ```
 
+> **Lazy initialization pattern:** `getAdminAuth()`, `getAdminDb()`, and `getAdminStorage()` are factory functions that initialize on first call. This is CRITICAL — pre-initialized module-level constants (like `const adminAuth = getAuth(adminApp)`) cause `cert()` to parse the private key during `next build`, which fails with placeholder credentials in CI.
+>
 > **`privateKey.replace(/\\n/g, '\n')`** — environment variables serialize the private key newlines as `\n` literal string. This replace restores the actual newlines required by the RSA private key format.
 
 ---
@@ -452,15 +466,16 @@ After setting claims, the user's token must refresh before the new claim takes e
 
 ```typescript
 // Anywhere you need the current user's role in a Server Component
-import { adminAuth } from '@/lib/firebase/admin';
-import { cookies }   from 'next/headers';
+import { getAdminAuth } from '@/lib/firebase/admin';
+import { cookies }      from 'next/headers';
 
 async function getCurrentUserRole(): Promise<string | null> {
-  const session = (await cookies()).get('__session')?.value;
+  const cookieStore = await cookies();
+  const session = cookieStore.get('__session')?.value;
   if (!session) return null;
 
   try {
-    const decoded = await adminAuth.verifySessionCookie(session, true);
+    const decoded = await getAdminAuth().verifySessionCookie(session, true);
     return (decoded.role as string) ?? 'user';
   } catch {
     return null;
@@ -1041,14 +1056,14 @@ Firebase Storage bucket: {project-id}.appspot.com
       9.webp
 
 /admin/
-  {document}              ← Private admin documents, internal use
+  {document}              ← Private admin documents (verification docs — Phase 2)
 ```
 
 ### 9.2 — Upload Flow
 
 ```
 Client selects file
-  → Validate: type (image/jpeg, image/png, image/webp), size (< 5MB)
+  → Validate client-side: type (image/jpeg, image/png, image/webp), size (< 5MB)
   → Upload to Firebase Storage via client SDK (uploadBytesResumable)
   → Storage Security Rules enforce same validation server-side
   → Cloud Function onObjectFinalized triggers:
@@ -1058,13 +1073,16 @@ Client selects file
       → If isPrimary: update parent listing's primaryImageUrl
 ```
 
-### 9.3 — File Size Limits
+### 9.3 — File Size and Count Limits
 
-| Type | Max Size | Max Count | Storage Path |
+| Type | Max Size (client) | Max Count | Storage Path |
 |---|---|---|---|
-| Vehicle image | 5MB (original) → ~200–400KB after WebP | 20 | `vehicles/{uid}/{id}/{n}.webp` |
-| Parts image | 5MB (original) → ~200–400KB after WebP | 10 | `parts/{uid}/{id}/{n}.webp` |
-| Avatar | 2MB (original) → ~50–100KB after WebP | 1 | `avatars/{uid}/avatar.webp` |
+| Vehicle image | 5MB (→ ~200–400KB after WebP) | 20 | `vehicles/{uid}/{id}/{n}.webp` |
+| Parts image | 5MB (→ ~200–400KB after WebP) | 10 | `parts/{uid}/{id}/{n}.webp` |
+| Avatar | 2MB (→ ~50–100KB after WebP) | 1 | `avatars/{uid}/avatar.webp` |
+| Verification doc | 10MB | 5 | `admin/{uid}/verify/{n}` — private, Phase 2 |
+
+> **Size limits are enforced at two layers:** (1) client-side validation before upload starts, and (2) Firebase Storage Security Rules rejecting uploads that exceed the size limit server-side.
 
 ---
 
@@ -1285,38 +1303,48 @@ service firebase.storage {
           && request.resource.size < 2 * 1024 * 1024;  // 2MB max for avatars
     }
 
-    // ─── Avatars ──────────────────────────────────────────────────────────
+    function isValidDoc() {
+      return request.resource.size < 10 * 1024 * 1024; // 10MB max for docs
+    }
+
+    // ─── Avatars — public read, owner write ───────────────────────────────
 
     match /avatars/{userId}/{allPaths=**} {
-      allow read:  if true;                                      // Public CDN
-      allow write: if isOwner(userId) && isValidAvatar();
+      allow read:   if true;                              // Public CDN
+      allow write:  if isOwner(userId) && isValidAvatar();
       allow delete: if isOwner(userId) || isAdmin();
     }
 
-    // ─── Vehicle images ───────────────────────────────────────────────────
+    // ─── Vehicle images — public read, owner write ────────────────────────
 
     match /vehicles/{userId}/{vehicleId}/{allPaths=**} {
-      allow read:  if true;                                      // Public CDN
-      allow write: if isOwner(userId) && isValidImage();
+      allow read:   if true;                              // Public CDN
+      allow write:  if isOwner(userId) && isValidImage();
       allow delete: if isOwner(userId) || isAdmin();
     }
 
-    // ─── Parts images ─────────────────────────────────────────────────────
+    // ─── Parts images — public read, owner write ──────────────────────────
 
     match /parts/{userId}/{partId}/{allPaths=**} {
-      allow read:  if true;
-      allow write: if isOwner(userId) && isValidImage();
+      allow read:   if true;
+      allow write:  if isOwner(userId) && isValidImage();
       allow delete: if isOwner(userId) || isAdmin();
     }
 
-    // ─── Admin documents ──────────────────────────────────────────────────
+    // ─── Admin / verification documents — private ─────────────────────────
+    // Phase 2: seller verification documents are only readable by admins and
+    // the owning user. Sellers upload; only admins can read.
 
-    match /admin/{allPaths=**} {
-      allow read, write: if isAdmin();
+    match /admin/{userId}/{allPaths=**} {
+      allow read:   if isOwner(userId) || isAdmin();
+      allow write:  if isOwner(userId) && isValidDoc();
+      allow delete: if isAdmin();
     }
   }
 }
 ```
+
+> **Rules testing:** Use `@firebase/rules-unit-testing` with the Storage Emulator to write unit tests for every rule. Do not deploy Storage Rules to production until all tests pass.
 
 ---
 
@@ -1381,7 +1409,7 @@ Action:
   2. Change all user's active listings to status: 'paused'
   3. Do NOT delete inquiries (POPIA: retain for dispute resolution, 24 months)
   4. Schedule hard delete for 30 days later (POPIA grace period)
-  5. Delete Storage files: avatars/{uid}/**, vehicles/{uid}/**, parts/{uid}/**
+  5. Delete Firebase Storage files: avatars/{uid}/**, vehicles/{uid}/**, parts/{uid}/**
 ```
 
 #### `onVehicleCreate` — Firestore trigger
@@ -1478,7 +1506,7 @@ All emails are plain-text with HTML for email clients. Templates live in `functi
     "rules": "storage.rules"
   },
   "functions": {
-    "source": "functions",
+    "source":  "functions",
     "runtime": "nodejs20"
   },
   "hosting": {
@@ -1580,6 +1608,8 @@ firebase emulators:start --import=./emulator-data
 
 ## 14. Firebase App Hosting Plan
 
+> **Deployment is deferred.** Firebase App Hosting is configured now but deployed when the app reaches Base 8 readiness. The `apphosting.yaml` file is committed to git and ready.
+
 ### 14.1 — `apphosting.yaml`
 
 ```yaml
@@ -1643,7 +1673,7 @@ env:
 
 > **Firebase App Hosting secrets** are managed in Google Cloud Secret Manager. Store the private key and Resend API key there, not in apphosting.yaml values.
 
-### 14.2 — Deployment Flow
+### 14.2 — Deployment Flow (when activated at Base 8)
 
 ```
 Developer pushes to feature branch
@@ -1671,7 +1701,7 @@ PR open (not merged)
 
 | Category | Where stored | Visibility |
 |---|---|---|
-| Firebase client config (`NEXT_PUBLIC_*`) | Firebase App Hosting console / `.env.local` | Public — embedded in client bundle |
+| Firebase client config (`NEXT_PUBLIC_FIREBASE_*`) | Firebase App Hosting console / `.env.local` | Public — embedded in client bundle |
 | Firebase Admin SDK credentials | Firebase Secret Manager + `.env.local` | Server-side only — NEVER in client bundle |
 | Resend API key | Firebase Secret Manager + `.env.local` | Server-side only |
 | App config (`NEXT_PUBLIC_APP_*`) | Firebase App Hosting console / `.env.local` | Public |

@@ -14,10 +14,10 @@
 > **New stack:** Firebase (Firebase Auth + Cloud Firestore + Firebase Storage + Security Rules + Cloud Functions + Firebase App Hosting)
 >
 > **Why the change:**
-> The team chose Firebase as the backend platform. Firebase provides a tightly integrated, Google-managed ecosystem — Auth, Firestore, Storage, Security Rules, Cloud Functions, and App Hosting all work together natively and share a single Firebase project config. The Firebase SDK is first-class in Next.js, the Admin SDK is mature, and the Firebase Emulator Suite enables full offline-local development without Docker. Firebase App Hosting (GA 2024) provides native Next.js SSR support with auto-scaling and GitHub integration.
+> The team chose Firebase as the backend platform on the Blaze (pay-as-you-go) plan. Firebase provides a tightly integrated, Google-managed ecosystem — Auth, Firestore, Storage, Security Rules, Cloud Functions, and App Hosting all work together natively and share a single Firebase project config. The Firebase SDK is first-class in Next.js, the Admin SDK is mature, and the Firebase Emulator Suite enables full offline-local development without Docker.
 >
 > **Architectural consequence:**
-> This is no longer a relational Postgres/RLS app. The data layer is **Cloud Firestore** — a NoSQL document database. All schema planning has been reworked as Firestore collections, document shapes, composite indexes, and Security Rules. Cloud Functions replaces Supabase Edge Functions for backend logic and email triggers. All Supabase-specific references in this document have been replaced.
+> This is no longer a relational Postgres/RLS app. The data layer is **Cloud Firestore** — a NoSQL document database. All schema planning has been reworked as Firestore collections, document shapes, composite indexes, and Security Rules. Cloud Functions replaces Supabase Edge Functions for backend logic and email triggers. Firebase Storage handles all file uploads. All Supabase-specific references in this document have been replaced.
 >
 > **What does not change:** Next.js App Router, TypeScript, Tailwind CSS v4, shadcn/ui, GitHub, Resend (email), POPIA obligations, all product decisions, user journeys, and feature scope.
 
@@ -540,7 +540,7 @@ shadcn/ui uses CSS variables for theming. The Figma design tokens should be mapp
 | **UI Components** | shadcn/ui | Latest | Not a library — copies components into codebase. Full control, Radix primitives underneath, accessible |
 | **Auth** | Firebase Auth | Latest | Email/password, Google OAuth, email verification, password reset — all built-in; integrates with Firestore Security Rules |
 | **Database** | Cloud Firestore | Latest | NoSQL document database; real-time capable, offline-ready, scales automatically, Security Rules enforced at DB layer |
-| **File Storage** | Firebase Storage | Latest | CDN-served object storage; Security Rules integrated with Firebase Auth; same project config as Firestore |
+| **File Storage** | Firebase Storage | Latest | CDN-served object storage; Security Rules integrated with Firebase Auth; same project config as Firestore and Auth |
 | **Backend Functions** | Cloud Functions for Firebase | 2nd gen | Triggered by Firestore writes, Auth events, HTTP calls; handles email dispatch, role assignment, admin tasks |
 | **Icons** | Lucide React | Latest | Default icon set for shadcn/ui; consistent, tree-shakeable |
 | **Email** | Resend | Latest | Simple API, Next.js SDK, generous free tier (3000 emails/month), reliable deliverability; called from Cloud Functions |
@@ -549,9 +549,9 @@ shadcn/ui uses CSS variables for theming. The Figma design tokens should be mapp
 
 | Layer | Technology | Rationale |
 |---|---|---|
-| **App Hosting** | Firebase App Hosting | Native Next.js SSR support (App Router), auto-scaling, CDN, GitHub integration, managed SSL, same Firebase project |
+| **App Hosting** | Firebase App Hosting | Native Next.js SSR support (App Router), auto-scaling, CDN, GitHub integration, managed SSL, same Firebase project. Deployment deferred until app is ready. |
 | **Database / Auth / Storage** | Firebase (single project) | All Firebase services share one project config — one set of credentials, unified Security Rules, one console |
-| **Backend Logic** | Cloud Functions (2nd gen) | Collocated with Firebase project; triggered by Firestore/Auth events; no separate infrastructure needed |
+| **Backend Logic** | Cloud Functions (2nd gen) | Collocated with Firebase project; triggered by Firestore/Auth events; no separate infrastructure needed. Deferred until needed. |
 | **Version Control** | GitHub | CI/CD via GitHub Actions; Firebase App Hosting auto-deploys from `main` |
 | **AI Development** | Claude Code | AI-assisted development within the project; documented in `CLAUDE.md` |
 
@@ -1323,7 +1323,7 @@ The Privacy Policy page must cover (in plain English):
 | CSRF protection | Next.js App Router + SameSite cookie defaults |
 | Rate limiting | Firebase App Check (Phase 2) + Next.js middleware for API routes + Cloud Function rate checks |
 | File upload validation | Type and size checks in Firebase Storage Security Rules + Cloud Function validation |
-| Admin routes | Protected by `middleware.ts` — verifies session cookie + checks `role` custom claim via Admin SDK |
+| Admin routes | Protected by `proxy.ts` — verifies session cookie + checks `role` custom claim via Admin SDK |
 | Environment variables | All secrets in Firebase Secret Manager (functions) and Firebase App Hosting env config; never in codebase |
 | Dependency scanning | GitHub Dependabot + periodic `npm audit` |
 
@@ -1332,6 +1332,7 @@ The Privacy Policy page must cover (in plain English):
 ### 12.4 Security Headers (next.config.ts)
 
 ```typescript
+// To be configured in Base 3 — next.config.ts
 // To be configured in Base 3 — next.config.ts
 // Note: Firebase App Hosting supports custom headers via apphosting.yaml or next.config.ts
 const securityHeaders = [
@@ -1384,7 +1385,7 @@ Each environment requires its own Firebase project:
 firebase.json           ← hosting, functions, emulator, rules config
 firestore.rules         ← Firestore Security Rules
 firestore.indexes.json  ← Composite indexes
-storage.rules           ← Storage Security Rules
+storage.rules           ← Firebase Storage Security Rules
 apphosting.yaml         ← Firebase App Hosting config
 functions/              ← Cloud Functions source
 ```
@@ -1562,7 +1563,7 @@ Communication between Firebase and Cloud Run:
 - [ ] `onUserCreate` Cloud Function written: creates `users/{uid}` document, sends welcome email
 - [ ] Session cookie API route: `POST /api/auth/session` (ID token → session cookie)
 - [ ] Session cookie API route: `DELETE /api/auth/session` (sign out)
-- [ ] `middleware.ts` written: verifies session cookie, protects dashboard + admin routes
+- [ ] `proxy.ts` written: verifies session cookie presence, protects dashboard + admin routes (Next.js 16 convention)
 - [ ] Register page (`/register`)
 - [ ] Login page (`/login`)
 - [ ] Forgot password page (`/forgot-password`)
@@ -1665,6 +1666,7 @@ Communication between Firebase and Cloud Run:
 |---|---|---|---|
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 1 document |
 | 1.1 | 2026-05-27 | MotorSphere Team | Stack pivot: Supabase → Firebase. Replaced Section 11 (Supabase Planning) with full Firebase planning (Auth roles, Firestore collections, Security Rules, Cloud Functions, Emulator, App Hosting). Updated tech stack, deployment, security, risks, and all checklist items. |
+| 1.2 | 2026-05-27 | MotorSphere Team | Final stack confirmed. Firebase Blaze plan. Firebase Storage for all uploads. Firebase App Hosting for deployment (deferred). Updated Stack Pivot Note; confirmed Email/Password auth first (Google OAuth Phase 1b); Cloud Functions and App Hosting deferred until needed. All doc references to non-Firebase providers removed. |
 
 ---
 
