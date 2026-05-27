@@ -1,0 +1,35 @@
+# netlify.toml — Netlify deployment configuration for MotorSphere
+# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  command   = "npm run build"
+  publish   = ".next"
+
+[build.environment]
+  # Node.js version — must match functions/package.json engines.node
+  NODE_VERSION = "20"
+
+# ─── Next.js plugin — enables SSR, API routes, and image optimisation ─────────
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# ─── Environment variables ────────────────────────────────────────────────────
+# Set these in: Netlify Dashboard → Site → Environment Variables
+# Do NOT put real values here — this file is committed to git.
+#
+# Required variables (get from Firebase Console → Project Settings):
+#
+#   NEXT_PUBLIC_FIREBASE_API_KEY
+#   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+#   NEXT_PUBLIC_FIREBASE_PROJECT_ID
+#   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+#   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+#   NEXT_PUBLIC_FIREBASE_APP_ID
+#
+#   FIREBASE_ADMIN_PROJECT_ID
+#   FIREBASE_ADMIN_CLIENT_EMAIL
+#   FIREBASE_ADMIN_PRIVATE_KEY        ← paste with \n as literal characters
+#
+#   NEXT_PUBLIC_APP_URL               ← your Netlify URL or custom domain
+#   NEXT_PUBLIC_APP_ENV               = production
+#   NEXT_PUBLIC_USE_FIREBASE_EMULATORS = false

@@ -1,6 +1,9 @@
 # .github/workflows/ci.yml
 # MotorSphere CI — runs on every push and PR to main
 # Checks: lint, typecheck, build (Next.js), typecheck (Cloud Functions)
+#
+# Deployment: handled by Netlify (auto-deploy on push to main, preview on PRs)
+# Netlify reads this repo via GitHub integration — no deploy step needed here.
 
 name: CI
 
@@ -40,7 +43,7 @@ jobs:
         env:
           # ── Minimal env vars for build to succeed ──────────────────────────
           # next build embeds NEXT_PUBLIC_* at build time.
-          # Use placeholder strings — real values are set in Firebase App Hosting.
+          # Use placeholder strings — real values are set in Netlify environment variables.
           NEXT_PUBLIC_FIREBASE_API_KEY: build-placeholder
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: build-placeholder.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: build-placeholder
