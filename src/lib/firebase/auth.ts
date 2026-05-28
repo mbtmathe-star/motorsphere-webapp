@@ -41,7 +41,18 @@ async function createSessionCookie(credential: UserCredential): Promise<void> {
 
 export async function signIn(email: string, password: string): Promise<void> {
   const credential = await signInWithEmailAndPassword(auth, email, password);
-  await createSessionCookie(credential);
+
+  // If session cookie creation fails (e.g. Admin SDK env vars wrong in Vercel),
+  // sign the client out immediately so the browser doesn't end up in a split
+  // state (Firebase client-auth signed-in but no httpOnly session cookie).
+  try {
+    await createSessionCookie(credential);
+  } catch {
+    await firebaseSignOut(auth);
+    const err = new Error('session-failed') as Error & { code: string };
+    err.code = 'auth/session-failed';
+    throw err;
+  }
 }
 
 // ─── Create account with email + password ────────────────────────────────────

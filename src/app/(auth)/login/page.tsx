@@ -19,6 +19,10 @@ function friendlyError(code: string): string {
       return 'Too many attempts. Please wait a moment before trying again.';
     case 'auth/network-request-failed':
       return 'A network error occurred. Please check your connection and try again.';
+    case 'auth/session-failed':
+      // Session cookie creation failed server-side — surface a specific message
+      // so this doesn't silently look like a wrong-password error.
+      return 'session-failed';
     default:
       return 'We could not sign you in. Please check your details.';
   }
@@ -52,7 +56,18 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (err: unknown) {
       const code = (err as { code?: string }).code ?? '';
-      setError(friendlyError(code));
+      const msg  = friendlyError(code);
+
+      if (msg === 'session-failed') {
+        // Admin SDK is misconfigured on the server. Firebase client-auth has
+        // already been signed out by signIn(). Show a clear server error.
+        setError(
+          'Sign-in failed due to a server configuration issue. ' +
+          'Please try again shortly or contact support if this persists.',
+        );
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

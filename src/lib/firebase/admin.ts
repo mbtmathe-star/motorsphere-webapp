@@ -35,13 +35,30 @@ function getAdminApp(): App {
     return _app;
   }
 
+  // ── Pre-flight: log missing / malformed env vars so Vercel logs tell us
+  //    exactly what is wrong rather than a cryptic crypto/init error.
+  const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+  const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
+
+  if (!projectId)   console.error('[admin] FIREBASE_ADMIN_PROJECT_ID is not set');
+  if (!clientEmail) console.error('[admin] FIREBASE_ADMIN_CLIENT_EMAIL is not set');
+  if (!privateKey)  console.error('[admin] FIREBASE_ADMIN_PRIVATE_KEY is not set');
+  if (privateKey && !privateKey.includes('BEGIN PRIVATE KEY')) {
+    console.error(
+      '[admin] FIREBASE_ADMIN_PRIVATE_KEY does not look like a valid PEM key. ' +
+      'Make sure you pasted the full key including the BEGIN/END headers ' +
+      'and that newlines are stored as literal \\n in the Vercel env var.',
+    );
+  }
+
   _app = initializeApp({
     credential: cert({
-      projectId:   process.env.FIREBASE_ADMIN_PROJECT_ID!,
-      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL!,
-      // Environment variables serialize newlines as literal \n — restore them.
+      projectId:   projectId!,
+      clientEmail: clientEmail!,
+      // Vercel stores env vars with literal \n — restore them to real newlines.
       // The RSA private key format requires actual newline characters.
-      privateKey:  process.env.FIREBASE_ADMIN_PRIVATE_KEY!.replace(/\\n/g, '\n'),
+      privateKey:  (privateKey ?? '').replace(/\\n/g, '\n'),
     }),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
   });
