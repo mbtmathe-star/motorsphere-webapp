@@ -22,7 +22,9 @@
       "Bash(git commit -m 'design: glassmorphism category tiles — frosted glass over hero image *)",
       "Bash(git commit -m 'design: replace SVG icons with emojis on category tiles *)",
       "PowerShell(npm install -g vercel 2>&1)",
-      "PowerShell(vercel login)"
+      "PowerShell(vercel login)",
+      "Bash(git commit -m 'feat: Base 6B — role-specific onboarding, verification status + dashboard pages *)",
+      "Bash(git commit -m 'feat: Base 6C — real listing creation + Firestore listing lifecycle *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\CASH CONVERTERS\\Desktop\\motorsphere\\motorsphere-webapp"

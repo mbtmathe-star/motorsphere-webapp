@@ -192,6 +192,48 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ─── /listings/{listingId} ───────────────────────────────────────────────
+    //
+    // Unified listing collection used by the Base 6C listing lifecycle.
+    // Public can only read live/approved listings.
+    // Owners can read/update their own draft/submitted listings.
+    // Admins can read all and update any field.
+
+    match /listings/{listingId} {
+      // Read: public live/approved, owner's own listings, or admin
+      allow read: if resource.data.status in ['live', 'approved']
+                  || isOwner(resource.data.ownerId)
+                  || isAdmin();
+
+      // Create: authenticated users with a selling account type
+      // Must be their own listing, draft or submitted only
+      // Cannot self-set admin-controlled fields
+      allow create: if isAuth()
+                    && request.resource.data.ownerId == uid()
+                    && request.resource.data.status in ['draft', 'submitted']
+                    && request.resource.data.featured        == false
+                    && request.resource.data.approvedAt      == null
+                    && request.resource.data.rejectedAt      == null
+                    && request.resource.data.rejectionReason == null;
+
+      // Update: owner can edit draft/submitted listings (cannot self-approve or self-publish)
+      allow update: if (
+                        isOwner(resource.data.ownerId)
+                        // Can only update draft or submitted listings
+                        && resource.data.status in ['draft', 'submitted']
+                        // Cannot change to any admin-only status
+                        && request.resource.data.status in ['draft', 'submitted']
+                        // Cannot touch admin-only fields
+                        && request.resource.data.featured        == resource.data.featured
+                        && request.resource.data.approvedAt      == resource.data.approvedAt
+                        && request.resource.data.rejectedAt      == resource.data.rejectedAt
+                        && request.resource.data.rejectionReason == resource.data.rejectionReason
+                      )
+                      || isAdmin();
+
+      allow delete: if isOwner(resource.data.ownerId) || isAdmin();
+    }
+
     // ─── /adminFlags/{flagId} ────────────────────────────────────────────────
 
     match /adminFlags/{flagId} {

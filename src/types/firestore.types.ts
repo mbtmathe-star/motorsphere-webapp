@@ -62,13 +62,31 @@ export type PartCondition = typeof PART_CONDITIONS[number];
 
 export const LISTING_STATUSES = [
   'draft',
+  'submitted',
   'pending_review',
-  'active',
-  'paused',
-  'sold',
+  'approved',
+  'live',
   'rejected',
+  'sold',
+  'expired',
+  'flagged',
+  'suspended',
 ] as const;
 export type ListingStatus = typeof LISTING_STATUSES[number];
+
+export const MODERATION_STATUSES = [
+  'none',
+  'pending_review',
+  'approved',
+  'rejected',
+  'flagged',
+] as const;
+export type ModerationStatus = typeof MODERATION_STATUSES[number];
+
+export const VEHICLE_TYPES = [
+  'Car', 'Bakkie', 'SUV', 'Truck', 'Van', 'Bus', 'Motorcycle',
+] as const;
+export type VehicleType = typeof VEHICLE_TYPES[number];
 
 export const USER_ROLES = [
   'user',
@@ -135,6 +153,7 @@ export type ContactPref = typeof CONTACT_PREFS[number];
 export const LISTING_TYPES = [
   'vehicle',
   'part',
+  'service',
 ] as const;
 export type ListingType = typeof LISTING_TYPES[number];
 
@@ -374,3 +393,74 @@ export type SerializedUser     = Serialized<UserDoc>;
 export type SerializedInquiry  = Serialized<InquiryDoc>;
 export type SerializedReply    = Serialized<ReplyDoc>;
 export type SerializedSaved    = Serialized<SavedListingDoc>;
+
+// ─── /listings/{listingId} ────────────────────────────────────────────────────
+//
+// Unified listing collection for the Base 6C listing lifecycle.
+// listingType discriminates vehicle / part / service.
+// Prices are ZAR cents (integer) — use formatZAR() from utils/format.ts.
+
+export interface ListingDoc {
+  id:               string;           // = document ID
+  ownerId:          string;           // Firebase Auth UID
+  ownerDisplayName: string;           // denormalised
+  ownerRole:        AccountType;
+
+  // Core
+  listingType:      ListingType;      // 'vehicle' | 'part' | 'service'
+  category:         string;           // e.g. 'vehicles', 'bakkies', 'parts', 'services'
+  title:            string;
+  description:      string;
+  price:            number;           // ZAR cents — ALWAYS integer (R 150 000 = 15000000)
+  negotiable:       boolean;
+  province:         Province;
+  city:             string;
+  contactPreference: ContactPref;
+
+  // Lifecycle
+  status:           ListingStatus;
+  moderationStatus: ModerationStatus;
+  featured:         boolean;
+  imagePlaceholders: string[];        // filenames — Base 7 replaces with Storage URLs
+  rejectionReason:  string | null;
+
+  // Timestamps
+  createdAt:        Timestamp;
+  updatedAt:        Timestamp;
+  submittedAt:      Timestamp | null;
+  approvedAt:       Timestamp | null;
+  rejectedAt:       Timestamp | null;
+
+  // ── Vehicle-specific (listingType === 'vehicle') ──────────────────────────
+  vehicleType?:          VehicleType;
+  make?:                 string;
+  model?:                string;
+  year?:                 number;
+  mileage?:              number | null;
+  fuelType?:             FuelType;
+  transmission?:         VehicleTransmission;
+  condition?:            VehicleCondition;
+  colour?:               string | null;
+  serviceHistory?:       boolean;
+  ownershipDeclaration?: boolean;
+
+  // ── Part-specific (listingType === 'part') ────────────────────────────────
+  partName?:          string;
+  partCategory?:      string;
+  oemOrAftermarket?:  'oem' | 'aftermarket';
+  compatibleMakes?:   string[];
+  compatibleModels?:  string[];
+  quantityAvailable?: number;
+  warrantyPolicy?:    string;
+  deliveryAvailable?: boolean;
+  partCondition?:     PartCondition;
+
+  // ── Service-specific (listingType === 'service') ──────────────────────────
+  serviceType?:        string;
+  rmiStatus?:          boolean;
+  serviceArea?:        string;
+  operatingHours?:     string;
+  emergencyAvailable?: boolean;
+}
+
+export type SerializedListing = Serialized<ListingDoc>;
