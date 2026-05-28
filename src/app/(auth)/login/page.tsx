@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/firebase/auth';
@@ -30,6 +30,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(null);
+  const [notice,   setNotice]   = useState<string | null>(null);
+
+  // Read ?notice= from the URL without useSearchParams (avoids Suspense requirement)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('notice') === 'account-created') {
+      setNotice('Your account was created. Sign in below to access your dashboard.');
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +64,12 @@ export default function LoginPage() {
         <h1 className="text-2xl font-black tracking-[-0.04em] text-[#121826] mb-1">Welcome back</h1>
         <p className="text-[#687589] text-sm">Sign in to access your MotorSphere dashboard and listings.</p>
       </div>
+
+      {notice && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-green-50 border border-green-200">
+          <p className="text-sm text-green-800 font-medium">✓ {notice}</p>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 border border-red-200">

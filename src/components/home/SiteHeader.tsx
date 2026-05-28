@@ -4,8 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  MenuIcon, GlobeIcon, SettingsIcon, SearchIcon, MapPinIcon,
-  PlusIcon, ImageIcon, Icon,
+  MenuIcon, GlobeIcon, SearchIcon, MapPinIcon, Icon,
 } from './icons';
 import { heroSlides, categories } from '@/data/home-data';
 
@@ -30,7 +29,6 @@ export default function SiteHeader() {
   const [language, setLanguage] = useState('English');
   const [currentSlide, setCurrentSlide] = useState(0);
   const [bannerVisible, setBannerVisible] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -170,15 +168,6 @@ export default function SiteHeader() {
               </div>
             )}
 
-            {/* Settings button */}
-            <button
-              onClick={() => setModalOpen(true)}
-              className="inline-flex items-center justify-center w-10 h-10 text-white rounded-[10px] shadow-[0_8px_22px_rgba(0,0,0,.22)] transition-all duration-200 hover:-translate-y-px"
-              style={{ background: 'rgba(255,255,255,.2)' }}
-              aria-label="Open backoffice settings"
-            >
-              <span className="w-5 h-5"><SettingsIcon /></span>
-            </button>
           </div>
         </div>
 
@@ -295,69 +284,6 @@ export default function SiteHeader() {
         </section>
       </section>
 
-      {/* ── Backoffice Modal ──────────────────────────────────────────────────────── */}
-      {modalOpen && (
-        <div
-          className="fixed inset-0 z-[150] flex items-center justify-center p-6"
-          style={{ background: 'rgba(0,0,0,.68)', backdropFilter: 'blur(2px)' }}
-          onClick={e => { if (e.target === e.currentTarget) setModalOpen(false); }}
-          role="dialog"
-          aria-modal="true"
-          aria-label="MotorSphere Backoffice"
-        >
-          <div
-            className="w-full max-w-[1150px] min-h-[400px] bg-white text-[#121212] rounded-xl overflow-hidden shadow-[0_28px_80px_rgba(0,0,0,.36)]"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Modal header */}
-            <div className="h-[90px] border-b border-[#eee] flex items-center justify-between px-6">
-              <h2 className="text-2xl font-bold m-0">MotorSphere Backoffice</h2>
-              <button
-                onClick={() => setModalOpen(false)}
-                className="text-3xl leading-none text-[#111] bg-transparent border-0 hover:text-[#555] transition-colors"
-                aria-label="Close backoffice"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Modal body */}
-            <div className="p-6 pb-16">
-              {/* Stats row */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 mb-8">
-                {[
-                  { value: '12', label: 'Pending listings' },
-                  { value: '48', label: 'Live listings' },
-                  { value: '7',  label: 'Verification reviews' },
-                  { value: '23', label: 'New inquiries' },
-                ].map(stat => (
-                  <div key={stat.label} className="bg-[#f8fafc] border border-[#e2e8f0] rounded-2xl p-4">
-                    <strong className="block text-2xl font-black tracking-tight text-[#121826]">{stat.value}</strong>
-                    <span className="text-[#687589] text-xs font-bold">{stat.label}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Banner section header */}
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold m-0 text-[#121826]">Advertising Banners</h3>
-                <button className="inline-flex items-center gap-2 border-0 rounded-xl px-4 py-3 bg-[#0866ff] text-white font-bold text-sm hover:bg-[#064dc1] transition-colors">
-                  <span className="w-4 h-4"><PlusIcon /></span>
-                  Add New Banner
-                </button>
-              </div>
-
-              {/* Empty state */}
-              <div className="flex flex-col items-center justify-center py-10 text-[#647083]">
-                <span className="w-16 h-16 mb-4 text-[#aeb6c2]">
-                  <ImageIcon />
-                </span>
-                <p className="text-sm">No banners created yet. Click &#34;Add New Banner&#34; to get started.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

@@ -51,7 +51,8 @@ const ROLES: RoleOption[] = [
 ];
 
 // Map Firebase Auth error codes to friendly messages
-function friendlyError(code: string): string {
+function friendlyError(err: unknown): string {
+  const code = (err as { code?: string }).code ?? '';
   switch (code) {
     case 'auth/email-already-in-use':
       return 'This email is already registered. Please sign in instead.';
@@ -61,6 +62,11 @@ function friendlyError(code: string): string {
       return 'Please enter a valid email address.';
     case 'auth/network-request-failed':
       return 'A network error occurred. Please check your connection and try again.';
+    case 'auth/session-failed':
+      // Account was created in Firebase Auth but the server session cookie
+      // could not be set (Admin SDK credentials missing in the deployment).
+      // The client has been signed out — user should sign in via /login.
+      return 'session-failed';
     default:
       return 'Something went wrong. Please try again.';
   }
@@ -114,8 +120,17 @@ export default function RegisterPage() {
       // 3. Navigate to dashboard — auth state will resolve via AuthProvider
       router.push('/dashboard');
     } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? '';
-      setError(friendlyError(code));
+      const msg = friendlyError(err);
+
+      if (msg === 'session-failed') {
+        // Firebase Auth account WAS created but the session cookie API failed.
+        // The client has been signed out automatically. Send to /login so they
+        // can complete sign-in once the deployment is configured correctly.
+        router.push('/login?notice=account-created');
+        return;
+      }
+
+      setError(msg);
       setLoading(false);
     }
   };

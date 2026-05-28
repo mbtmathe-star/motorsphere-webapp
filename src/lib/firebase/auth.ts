@@ -56,8 +56,19 @@ export async function signUp(
   // Update Firebase Auth display name (useful for Auth-level queries)
   await updateProfile(credential.user, { displayName });
 
-  // Create the server-side session cookie
-  await createSessionCookie(credential);
+  // Create the server-side session cookie.
+  // If this fails (e.g. Admin SDK env vars missing in the deployment), we sign
+  // the client out immediately so the browser doesn't end up in a split state
+  // where Firebase client-auth is signed in but no httpOnly session cookie exists.
+  try {
+    await createSessionCookie(credential);
+  } catch {
+    await firebaseSignOut(auth);
+    // Throw a typed error so the register page can surface a clear message
+    const err = new Error('session-failed') as Error & { code: string };
+    err.code = 'auth/session-failed';
+    throw err;
+  }
 
   return credential;
 }
