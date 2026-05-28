@@ -38,12 +38,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify the ID token is valid before creating a session cookie
-    await getAdminAuth().verifyIdToken(idToken);
+    // Step 1: verify the short-lived ID token
+    let decoded;
+    try {
+      decoded = await getAdminAuth().verifyIdToken(idToken);
+      console.log('[session] verifyIdToken OK — uid:', decoded.uid);
+    } catch (verifyErr) {
+      const e = verifyErr as { code?: string; message?: string };
+      console.error('[session] verifyIdToken FAILED —', e.code, e.message);
+      return NextResponse.json(
+        { error: 'Invalid ID token' },
+        { status: 401 },
+      );
+    }
 
-    // Create a 5-day session cookie
-    const expiresIn   = 5 * 24 * 60 * 60 * 1000;  // 5 days in ms
-    const sessionCookie = await getAdminAuth().createSessionCookie(idToken, { expiresIn });
+    // Step 2: exchange for a long-lived session cookie
+    const expiresIn = 5 * 24 * 60 * 60 * 1000; // 5 days in ms
+    let sessionCookie: string;
+    try {
+      sessionCookie = await getAdminAuth().createSessionCookie(idToken, { expiresIn });
+      console.log('[session] createSessionCookie OK — uid:', decoded.uid);
+    } catch (cookieErr) {
+      const e = cookieErr as { code?: string; message?: string };
+      console.error('[session] createSessionCookie FAILED —', e.code, e.message);
+      return NextResponse.json(
+        { error: 'Failed to create session cookie' },
+        { status: 401 },
+      );
+    }
 
     const response = NextResponse.json({ success: true }, { status: 200 });
 
@@ -57,9 +79,8 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('[/api/auth/session POST]', error);
-
-    // Don't expose internal error details
+    // Outer catch — unexpected errors (e.g. JSON parse failure)
+    console.error('[session] Unexpected error in POST /api/auth/session:', error);
     return NextResponse.json(
       { error: 'Failed to create session' },
       { status: 401 },
