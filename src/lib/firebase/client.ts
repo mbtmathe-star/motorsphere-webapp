@@ -12,6 +12,7 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth,      connectAuthEmulator      } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator  } from 'firebase/firestore';
 import { getStorage,   connectStorageEmulator    } from 'firebase/storage';
+import { shouldUseEmulators } from './emulator-config';
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -30,18 +31,17 @@ export const db      = getFirestore(app);
 export const storage = getStorage(app);
 
 // ─── Connect to local Firebase Emulators in development ──────────────────────
-// Controlled by NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true in .env.local
-// The typeof window check prevents this running during Next.js SSR
+// Requires BOTH:
+//   NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true  (exact string — Boolean() not used)
+//   NODE_ENV !== 'production'                (hard guard — never runs on Vercel)
+// The typeof window check prevents this running during Next.js SSR.
 
-if (
-  process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true' &&
-  typeof window !== 'undefined'
-) {
+if (shouldUseEmulators && typeof window !== 'undefined') {
   // Guard: check if already connected (prevents React Strict Mode double-run)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!(auth as any)._delegate?._config?.emulator) {
-    connectAuthEmulator(auth,    'http://localhost:9099', { disableWarnings: true });
-    connectFirestoreEmulator(db,  'localhost', 8080);
+    connectAuthEmulator(auth,      'http://localhost:9099', { disableWarnings: true });
+    connectFirestoreEmulator(db,   'localhost', 8080);
     connectStorageEmulator(storage, 'localhost', 9199);
   }
 }
