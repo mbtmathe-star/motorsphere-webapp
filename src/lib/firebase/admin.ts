@@ -55,7 +55,15 @@ function getAdminApp(): App {
     };
 
     try {
-      parsed = JSON.parse(serviceAccountJson);
+      // Strip UTF-8 BOM (U+FEFF) that Windows adds when reading files via
+      // PowerShell Get-Content or Notepad. JSON.parse() rejects BOM-prefixed
+      // strings even when the JSON itself is valid.
+      // charCodeAt(0) === 0xFEFF is the unambiguous BOM check.
+      const withoutBom = serviceAccountJson.charCodeAt(0) === 0xFEFF
+        ? serviceAccountJson.slice(1)
+        : serviceAccountJson;
+      const cleaned = withoutBom.trim();
+      parsed = JSON.parse(cleaned);
     } catch (e) {
       console.error('[admin] FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON:', e);
       throw e;
