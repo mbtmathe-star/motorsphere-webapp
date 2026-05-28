@@ -9,6 +9,13 @@
  * at module load time. It initializes on first function call. This prevents
  * build-time failures when real credentials aren't available during next build.
  *
+ * Credential strategy (checked in order):
+ *   1. FIREBASE_SERVICE_ACCOUNT_JSON — entire service account JSON as a string.
+ *      Paste the full contents of your service account .json file into Vercel.
+ *      JSON.parse() handles private key newlines automatically — no format issues.
+ *   2. FIREBASE_ADMIN_PROJECT_ID + FIREBASE_ADMIN_CLIENT_EMAIL + FIREBASE_ADMIN_PRIVATE_KEY
+ *      Legacy three-var approach (kept for backward compatibility).
+ *
  * Usage:
  *   import { getAdminAuth, getAdminDb } from '@/lib/firebase/admin';
  *   const decoded = await getAdminAuth().verifySessionCookie(session, true);
@@ -35,8 +42,40 @@ function getAdminApp(): App {
     return _app;
   }
 
-  // ── Pre-flight: log missing / malformed env vars so Vercel logs tell us
-  //    exactly what is wrong rather than a cryptic crypto/init error.
+  // ── Strategy 1: FIREBASE_SERVICE_ACCOUNT_JSON (preferred for Vercel) ─────────
+  // Paste the full service account .json file contents as this single env var.
+  // JSON.parse handles the private key newlines — no format issues.
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+  if (serviceAccountJson) {
+    let parsed: {
+      project_id: string;
+      client_email: string;
+      private_key: string;
+    };
+
+    try {
+      parsed = JSON.parse(serviceAccountJson);
+    } catch (e) {
+      console.error('[admin] FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON:', e);
+      throw e;
+    }
+
+    console.log('[admin] using FIREBASE_SERVICE_ACCOUNT_JSON — project:', parsed.project_id);
+
+    _app = initializeApp({
+      credential: cert({
+        projectId:   parsed.project_id,
+        clientEmail: parsed.client_email,
+        privateKey:  parsed.private_key,  // JSON.parse handles \n automatically
+      }),
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
+    });
+
+    return _app;
+  }
+
+  // ── Strategy 2: three separate env vars (legacy / local .env.local) ──────────
   const projectId   = process.env.FIREBASE_ADMIN_PROJECT_ID;
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey  = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
@@ -44,25 +83,15 @@ function getAdminApp(): App {
   if (!projectId)   console.error('[admin] FIREBASE_ADMIN_PROJECT_ID is not set');
   if (!clientEmail) console.error('[admin] FIREBASE_ADMIN_CLIENT_EMAIL is not set');
   if (!privateKey)  console.error('[admin] FIREBASE_ADMIN_PRIVATE_KEY is not set');
-  if (privateKey && !privateKey.includes('BEGIN PRIVATE KEY')) {
-    console.error(
-      '[admin] FIREBASE_ADMIN_PRIVATE_KEY does not look like a valid PEM key. ' +
-      'Make sure you pasted the full key including the BEGIN/END headers ' +
-      'and that newlines are stored as literal \\n in the Vercel env var.',
-    );
-  }
 
-  // Normalise the private key regardless of how it was pasted into Vercel:
-  //   1. Strip accidental surrounding quotes (common copy/paste error from JSON)
-  //   2. Convert literal \n sequences to real newlines (Vercel env var format)
-  //   3. Real newlines that already exist are left intact
+  // Normalise: strip accidental surrounding quotes, convert literal \n to real newlines
   const normalisedKey = (privateKey ?? '')
-    .replace(/^["']|["']$/g, '')   // strip leading/trailing " or ' if present
-    .replace(/\\n/g, '\n');         // literal \n → real newline
+    .replace(/^["']|["']$/g, '')
+    .replace(/\\n/g, '\n');
 
   console.log(
-    '[admin] private key starts with:',
-    normalisedKey.slice(0, 27),     // logs "-----BEGIN PRIVATE KEY-----" if correct
+    '[admin] using individual vars — key starts with:',
+    normalisedKey.slice(0, 27),
     '| length:', normalisedKey.length,
   );
 
