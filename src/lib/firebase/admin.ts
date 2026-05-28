@@ -52,13 +52,25 @@ function getAdminApp(): App {
     );
   }
 
+  // Normalise the private key regardless of how it was pasted into Vercel:
+  //   1. Strip accidental surrounding quotes (common copy/paste error from JSON)
+  //   2. Convert literal \n sequences to real newlines (Vercel env var format)
+  //   3. Real newlines that already exist are left intact
+  const normalisedKey = (privateKey ?? '')
+    .replace(/^["']|["']$/g, '')   // strip leading/trailing " or ' if present
+    .replace(/\\n/g, '\n');         // literal \n → real newline
+
+  console.log(
+    '[admin] private key starts with:',
+    normalisedKey.slice(0, 27),     // logs "-----BEGIN PRIVATE KEY-----" if correct
+    '| length:', normalisedKey.length,
+  );
+
   _app = initializeApp({
     credential: cert({
       projectId:   projectId!,
       clientEmail: clientEmail!,
-      // Vercel stores env vars with literal \n — restore them to real newlines.
-      // The RSA private key format requires actual newline characters.
-      privateKey:  (privateKey ?? '').replace(/\\n/g, '\n'),
+      privateKey:  normalisedKey,
     }),
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
   });
