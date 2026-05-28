@@ -1904,8 +1904,8 @@ Use page-level skeleton for:
 [ ] firestore.rules placeholder created
 [ ] storage.rules placeholder created
 [ ] firestore.indexes.json placeholder created
-[ ] netlify.toml created with build command, publish dir, and @netlify/plugin-nextjs
-[ ] apphosting.yaml created (deferred alternative — Netlify is the active hosting provider)
+[ ] vercel.json created (framework: nextjs, region: cpt1 — Cape Town)
+[ ] apphosting.yaml created (deferred alternative — Vercel is the active hosting provider)
 ```
 
 ### 16.3 Prettier & Git Hooks
@@ -1974,23 +1974,25 @@ Use page-level skeleton for:
 [ ] README badge showing CI status
 ```
 
-### 16.8 Netlify Deployment Setup
+### 16.8 Vercel Deployment Setup
+
+> **Netlify is no longer the active hosting provider.** `netlify.toml` is archived. Active hosting is Vercel. See `vercel.json`.
 
 ```
 [ ] Firebase CLI installed globally: npm install -g firebase-tools
 [ ] Firebase login: firebase login
 [ ] Firebase Emulator Suite confirmed working: firebase emulators:start
-[ ] Netlify site created and linked to GitHub repository
-[ ] Build settings confirmed in Netlify: command = npm run build, publish = .next
-[ ] netlify.toml committed (build config + @netlify/plugin-nextjs)
-[ ] @netlify/plugin-nextjs installed in devDependencies: npm install -D @netlify/plugin-nextjs
-[ ] Environment variable placeholders added in Netlify Dashboard → Site → Environment variables
+[ ] Vercel project created and linked to GitHub repository (vercel.com → Add New → Project)
+[ ] Build settings confirmed in Vercel: Next.js auto-detected, npm run build, region cpt1
+[ ] vercel.json committed (framework: nextjs, region: cpt1)
+[ ] Environment variable placeholders added in Vercel Dashboard → Project → Settings → Environment Variables
     (real values added when Firebase projects are configured in Base 3)
-[ ] Preview deployments enabled: Netlify auto-deploys any PR to a preview URL
-[ ] First deploy confirmed working (Netlify build log shows no errors)
+[ ] Preview deployments enabled: Vercel auto-deploys any PR to a preview URL (enabled by default)
+[ ] Firebase Auth: *.vercel.app added to Authorised Domains in Firebase Console
+[ ] First deploy confirmed working (Vercel build log shows no errors)
 ```
 
-> **Firebase App Hosting** is configured in `apphosting.yaml` (committed) but deferred. Activate it at Base 8 if the team decides to replace Netlify with Firebase-native hosting.
+> **Firebase App Hosting** is configured in `apphosting.yaml` (committed) but deferred. Activate it at a later stage if the team decides to replace Vercel with Firebase-native hosting.
 
 ### 16.9 Component Shells for Design Verification
 

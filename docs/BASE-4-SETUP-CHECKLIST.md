@@ -19,7 +19,7 @@
 1. [Claude Code Tasks (already done)](#1-claude-code-tasks-already-done)
 2. [Firebase Console Tasks](#2-firebase-console-tasks)
 3. [Firebase Storage Tasks](#3-firebase-storage-tasks)
-4. [Netlify Deployment Tasks](#4-netlify-deployment-tasks)
+4. [Vercel Deployment Tasks](#4-vercel-deployment-tasks)
 5. [Environment Variable Checklist](#5-environment-variable-checklist)
 6. [Local Emulator Verification](#6-local-emulator-verification)
 7. [Security Warnings — What Never to Expose](#7-security-warnings--what-never-to-expose)
@@ -52,8 +52,9 @@ These were completed during Base 3 scaffold (2026-05-27). Verify each file exist
 - [x] `firestore.indexes.json` — 17 composite indexes (strict JSON — no comments)
 - [x] `firebase.json` — Emulator ports: Auth 9099, Firestore 8080, Storage 9199, Functions 5001, UI 4000
 - [x] `.firebaserc` — staging + prod project aliases
-- [x] `netlify.toml` — Netlify deployment config (committed; Netlify is the active hosting provider)
-- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative to Netlify)
+- [x] `vercel.json` — Vercel deployment config (framework: nextjs, region: cpt1 Cape Town)
+- [x] `netlify.toml` — archived (historical only — Netlify replaced by Vercel)
+- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative to Vercel)
 
 ### 1.5 — Cloud Functions Scaffold
 - [x] `functions/src/index.ts` — exports onUserCreate, onUserDelete, onVehicleCreate
@@ -67,7 +68,7 @@ These were completed during Base 3 scaffold (2026-05-27). Verify each file exist
 - [x] `.env.local.example` — all env var keys documented
 - [x] `CLAUDE.md` — AI development context
 - [x] `.github/workflows/ci.yml` — lint + typecheck + build + functions typecheck
-- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative — Netlify is active)
+- [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative — Vercel is active)
 - [x] `tsconfig.json` — `"exclude": ["functions"]` to prevent root typecheck picking up functions/
 - [x] `package.json` — `dev`, `dev:full`, `emulators`, `build`, `lint`, `typecheck` scripts
 
@@ -176,26 +177,32 @@ Image compression (resize to max 1200px + WebP conversion) will be done by `onIm
 
 ---
 
-## 4. Netlify Deployment Tasks
+## 4. Vercel Deployment Tasks
 
-> **Netlify is the active hosting provider.** Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Netlify hosts the Next.js app and manages GitHub-based deploys and preview deployments.
+> **Vercel is the active hosting provider.** Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Vercel hosts the Next.js app and manages GitHub-based deploys and preview deployments.
 >
 > These tasks are completed once — not required before every Base stage, but should be done before the first staging preview is shared externally.
+>
+> **Netlify is no longer active.** `netlify.toml` is archived. Do not reactivate it.
 
-### 4.1 — Netlify Site Setup
-- [ ] Create a Netlify account at [netlify.com](https://www.netlify.com) (if not already)
-- [ ] Import the GitHub repository: Netlify Dashboard → Add new site → Import an existing project
+### 4.1 — Vercel Project Setup
+- [ ] Create a Vercel account at [vercel.com](https://vercel.com) (if not already)
+- [ ] Import the GitHub repository: Vercel Dashboard → Add New → Project → Import Git Repository
 - [ ] Connect GitHub account and select the `motorsphere-webapp` repository
-- [ ] Confirm build settings:
-  - Build command: `npm run build`
-  - Publish directory: `.next`
-  - Node version: `20` (set in `netlify.toml` — Netlify reads this automatically)
-- [ ] Deploy the site — Netlify will run the first build automatically
+- [ ] Vercel auto-detects Next.js — confirm build settings:
+  - Framework Preset: `Next.js` (auto-detected)
+  - Build Command: `npm run build` (default — matches `vercel.json`)
+  - Output Directory: `.next` (auto-detected)
+  - Install Command: `npm install` (default)
+  - Node.js Version: `20.x` (set in Vercel Project Settings → General → Node.js Version)
+- [ ] Deploy the site — Vercel will run the first build automatically
 
-### 4.2 — Environment Variables (Netlify Dashboard)
-Set the following in **Netlify Dashboard → Site → Environment variables**:
+### 4.2 — Environment Variables (Vercel Dashboard)
+Set the following in **Vercel Dashboard → Project → Settings → Environment Variables**.
 
-| Variable | Value | Scope |
+Apply each variable to the correct environments: `Production`, `Preview`, `Development`.
+
+| Variable | Value | Environment |
 |---|---|---|
 | `NEXT_PUBLIC_FIREBASE_API_KEY` | From Firebase Console | All |
 | `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | From Firebase Console | All |
@@ -205,27 +212,49 @@ Set the following in **Netlify Dashboard → Site → Environment variables**:
 | `NEXT_PUBLIC_FIREBASE_APP_ID` | From Firebase Console | All |
 | `FIREBASE_ADMIN_PROJECT_ID` | Same as project ID | All |
 | `FIREBASE_ADMIN_CLIENT_EMAIL` | From service account JSON | All |
-| `FIREBASE_ADMIN_PRIVATE_KEY` | From service account JSON (paste with `\n`) | All |
+| `FIREBASE_ADMIN_PRIVATE_KEY` | From service account JSON — see §5.2 for format | All |
 | `RESEND_API_KEY` | From resend.com → API Keys | All |
-| `NEXT_PUBLIC_APP_URL` | Your Netlify URL or `https://motorsphere.co.za` | Production |
+| `NEXT_PUBLIC_APP_URL` | Your Vercel URL or `https://motorsphere.co.za` | Production |
 | `NEXT_PUBLIC_APP_ENV` | `production` | Production |
 | `NEXT_PUBLIC_USE_FIREBASE_EMULATORS` | `false` | All |
 
-- [ ] All variables above added to Netlify Dashboard
-- [ ] Trigger a redeploy after adding variables: Netlify → Deploys → Trigger deploy
+> **`FIREBASE_ADMIN_PRIVATE_KEY` format on Vercel:**
+> Paste the full private key including `-----BEGIN PRIVATE KEY-----` and `-----END PRIVATE KEY-----`.
+> Use literal `\n` characters (backslash + n) to represent newlines — Vercel passes these to the runtime correctly.
+> The `admin.ts` factory function handles conversion: `.replace(/\\n/g, '\n')`.
+> Do NOT use actual newlines in the Vercel dashboard input field.
+
+- [ ] All variables above added to Vercel Dashboard
+- [ ] Trigger a redeploy after adding variables: Vercel → Deployments → Redeploy (latest)
 
 ### 4.3 — Preview Deployments
-- [ ] Confirm preview deployments are enabled: Netlify → Site configuration → Build & deploy → Deploy contexts
-- [ ] Open a test PR against `main` — verify Netlify creates a preview URL automatically
-- [ ] Preview URL format: `https://deploy-preview-{n}--{site-name}.netlify.app`
+- [ ] Preview deployments are enabled by default in Vercel — no configuration needed
+- [ ] Open a test PR against `main` — verify Vercel creates a preview URL automatically
+- [ ] Preview URL format: `https://{project-name}-git-{branch}-{team}.vercel.app`
+- [ ] Preview deployments use the same environment variables set to `Preview` environment
 
-### 4.4 — Custom Domain (when ready for launch)
-- [ ] Add domain in Netlify Dashboard → Domain management → Add a domain
-- [ ] Point DNS records to Netlify (Netlify provides the values)
-- [ ] SSL certificate provisioned automatically by Netlify (Let's Encrypt)
+### 4.4 — Authorised Domains (Firebase Console)
+Vercel preview deployments use dynamic URLs — Firebase Auth must allow them.
+- [ ] Go to: Firebase Console → Authentication → Settings → Authorised domains
+- [ ] Add: your Vercel production domain (e.g. `motorsphere-webapp.vercel.app` or `motorsphere.co.za`)
+- [ ] Add: `*.vercel.app` to cover preview deployments (or add specific preview domains as needed)
+- [ ] `localhost` is already in the authorised domains list by default
 
-### 4.5 — Firebase App Hosting (deferred alternative)
-> `apphosting.yaml` is committed to the repository. If the team decides to replace Netlify with Firebase App Hosting at Base 8, activate it then. No action required now.
+### 4.5 — Custom Domain (when ready for launch)
+- [ ] Add domain in Vercel Dashboard → Project → Settings → Domains → Add Domain
+- [ ] Point DNS records as instructed by Vercel (A record or CNAME provided)
+- [ ] SSL certificate provisioned automatically by Vercel
+- [ ] Update `NEXT_PUBLIC_APP_URL` to the custom domain in Vercel environment variables
+- [ ] Update authorised domains in Firebase Console to include the custom domain
+
+### 4.6 — PayFast Webhook URL (Base 9+ — deferred)
+> PayFast integration is deferred until Base 9. When the time comes:
+> - The PayFast merchant account must be configured with the **final Vercel production domain** as the return URL and ITN (Instant Transaction Notification) webhook endpoint.
+> - Do NOT use a Vercel preview URL for PayFast webhooks — use only the production domain.
+> - Example: `https://motorsphere.co.za/api/payfast/webhook`
+
+### 4.7 — Firebase App Hosting (deferred alternative)
+> `apphosting.yaml` is committed to the repository. If the team decides to replace Vercel with Firebase App Hosting at a later stage, activate it then. No action required now.
 
 ---
 
@@ -285,15 +314,15 @@ npm run dev:full
 # 2. Go to http://localhost:3000 — App should load without console errors
 ```
 
-### 5.4 — Variables for Production (Netlify)
+### 5.4 — Variables for Production (Vercel)
 
-Add all variables to the **Netlify Dashboard → Site → Environment variables** (see Section 4.2 for the full table). Netlify handles both public and private env vars securely — no separate secrets manager is needed.
+Add all variables to **Vercel Dashboard → Project → Settings → Environment Variables** (see Section 4.2 for the full table). Vercel handles both public and private env vars securely — no separate secrets manager is needed for Next.js deployments.
 
 Key production values:
 - `NEXT_PUBLIC_APP_URL` → set to your live domain (`https://motorsphere.co.za`)
 - `NEXT_PUBLIC_APP_ENV` → `production`
 - `NEXT_PUBLIC_USE_FIREBASE_EMULATORS` → `false`
-- `FIREBASE_ADMIN_PRIVATE_KEY` → paste with literal `\n` characters (Netlify passes these to server-side functions correctly)
+- `FIREBASE_ADMIN_PRIVATE_KEY` → paste with literal `\n` characters (Vercel passes these to server-side functions correctly via the runtime environment)
 
 > **Note:** If you later switch to Firebase App Hosting, move all variables to Google Cloud Secret Manager (for server-side vars) and the Firebase App Hosting console environment config (for `NEXT_PUBLIC_*` vars).
 
@@ -439,6 +468,7 @@ The `/admin/{userId}/verify/` storage path is private — only the owner and adm
 |---|---|---|---|
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 4 setup checklist. Full Firebase stack (Auth + Firestore + Storage + App Hosting deferred). Separated Claude Code tasks, Firebase Console tasks, Storage tasks, App Hosting (deferred), env var checklist, emulator verification, and security warnings. |
 | 1.1 | 2026-05-27 | MotorSphere Team | Deployment stack update: Netlify is now the active hosting provider. Firebase App Hosting kept as deferred alternative. Section 4 replaced with Netlify deployment tasks. Section 5.4 updated to Netlify environment variables. |
+| 1.2 | 2026-05-28 | MotorSphere Team | Hosting migration: Netlify → Vercel. Section 4 replaced with Vercel deployment tasks (project setup, env vars, preview deployments, authorised Firebase domains, PayFast domain note, Firebase App Hosting still deferred). Section 5.4 updated to Vercel. Section 1.4 updated to reference vercel.json. netlify.toml archived. |
 
 ---
 

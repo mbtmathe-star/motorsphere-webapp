@@ -12,7 +12,7 @@ Read this before suggesting code changes.
 - Tailwind CSS v4 (CSS-first — `@theme {}` in globals.css — NO `tailwind.config.ts`)
 - shadcn/ui (component copies, dark theme, Tailwind v4 mode)
 - Firebase (Auth + Firestore + Storage + Security Rules + Functions — backend only)
-- Netlify (hosting/deployment — `netlify.toml` + `@netlify/plugin-nextjs`)
+- Vercel (hosting/deployment — GitHub integration, Cape Town region `cpt1`, preview deployments)
 
 **Repo:** https://github.com/mbtmathe-star/motorsphere-webapp
 **Stage docs:** `docs/` directory — read the relevant BASE doc before making changes.
@@ -177,12 +177,15 @@ Emulator toggle: `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` in `.env.local`
 | BASE 1 | ✅ Complete | docs/BASE-1-PRODUCT-FOUNDATION.md |
 | BASE 2 | ✅ Complete | docs/BASE-2-UX-FIGMA-MAPPING.md |
 | BASE 2B | ✅ Complete | docs/BASE-2B-FIGMA-SCREEN-MAPPING.md |
-| BASE 3 | 🔄 In Progress | docs/BASE-3-FIREBASE-ARCHITECTURE.md |
-| BASE 4 | ⏳ Pending | Vehicle listings |
-| BASE 5 | ⏳ Pending | Parts listings |
-| BASE 6 | ⏳ Pending | Inquiries + saved |
-| BASE 7 | ⏳ Pending | Admin panel |
-| BASE 8 | ⏳ Pending | Launch |
+| BASE 3 | ✅ Complete | docs/BASE-3-FIREBASE-ARCHITECTURE.md |
+| BASE 6A | ✅ Complete | Real Firebase Auth + user profiles |
+| BASE 6B | 🔲 Next | Role onboarding + verification status |
+| BASE 6C | ⏳ Pending | Listing creation + approval workflow |
+| BASE 6D | ⏳ Pending | Inquiries + saved listings |
+| BASE 6E | ⏳ Pending | Admin moderation panel |
+| BASE 7 | ⏳ Pending | Firebase Storage uploads |
+| BASE 8 | ⏳ Pending | Packages + subscription planning UI |
+| BASE 9 | ⏳ Pending | PayFast integration |
 
 ---
 
@@ -197,6 +200,20 @@ Emulator toggle: `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` in `.env.local`
 
 ---
 
+## Deployment — Vercel
+
+- Active hosting: **Vercel** — `vercel.json` in repo root
+- Region: `cpt1` (Cape Town, South Africa) — lowest latency for SA users
+- Build command: `npm run build` (unchanged — Vercel auto-detects Next.js)
+- GitHub → Vercel: push to `main` → auto production deploy; any PR → preview deployment
+- Environment variables: set in **Vercel Dashboard → Project → Settings → Environment Variables**
+- `NEXT_PUBLIC_USE_FIREBASE_EMULATORS` must be `false` in Vercel
+- `FIREBASE_ADMIN_PRIVATE_KEY`: paste the full key with literal `\n` for newlines
+- `NEXT_PUBLIC_APP_URL`: set to the final Vercel production domain (or custom domain `motorsphere.co.za`)
+- PayFast webhook URLs (Base 9+): must use the final Vercel production domain — not a preview URL
+- `netlify.toml` is archived (historical only) — do NOT reactivate
+- `apphosting.yaml` is committed but deferred (Firebase App Hosting — not active)
+
 ## What Not To Do
 
 - ❌ Do NOT import `firebase-admin` in any `"use client"` component
@@ -208,3 +225,5 @@ Emulator toggle: `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` in `.env.local`
 - ❌ Do NOT add `tailwind.config.ts` (Tailwind v4 is CSS-first)
 - ❌ Do NOT add light mode variants at MVP (dark theme only)
 - ❌ Do NOT skip emulator testing for Security Rules changes
+- ❌ Do NOT re-enable `netlify.toml` — Netlify is no longer the active host
+- ❌ Do NOT install `@netlify/plugin-nextjs` — removed from devDependencies

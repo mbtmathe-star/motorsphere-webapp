@@ -42,7 +42,7 @@ Three paths were proposed for what to build next:
 ✓ Folder structure locked (components/, lib/, types/, hooks/, utils/)
 ✓ TypeScript types for all Firestore document shapes
 ✓ GitHub Actions CI (lint + type-check + build)
-✓ netlify.toml configured (Netlify is the active hosting provider; Firebase App Hosting deferred)
+✓ vercel.json configured (Vercel is the active hosting provider; Firebase App Hosting deferred)
 ✓ .env.local.example with all variable keys documented
 ✓ CLAUDE.md for AI-assisted development context
 ```
