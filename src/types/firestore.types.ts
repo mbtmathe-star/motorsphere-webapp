@@ -89,13 +89,41 @@ export const ACCOUNT_TYPES = [
 ] as const;
 export type AccountType = typeof ACCOUNT_TYPES[number];
 
+// Account lifecycle status
+export const ACCOUNT_STATUSES = [
+  'active',
+  'suspended',
+  'deleted',
+] as const;
+export type AccountStatus = typeof ACCOUNT_STATUSES[number];
+
+// Onboarding progress
+export const ONBOARDING_STATUSES = [
+  'incomplete',
+  'verification_submitted',
+  'complete',
+] as const;
+export type OnboardingStatus = typeof ONBOARDING_STATUSES[number];
+
+// Verification lifecycle
 export const VERIFICATION_STATUSES = [
   'not_started',
-  'pending',
-  'approved',
-  'rejected',
+  'submitted',        // user has submitted their form/documents
+  'pending_review',   // admin has it in queue (set by Cloud Function / admin)
+  'approved',         // approved by admin
+  'rejected',         // rejected by admin
+  'not_required',     // buyers / non-selling accounts
 ] as const;
 export type VerificationStatus = typeof VERIFICATION_STATUSES[number];
+
+// Subscription tier
+export const SUBSCRIPTION_STATUSES = [
+  'free',
+  'basic',
+  'premium',
+  'enterprise',
+] as const;
+export type SubscriptionStatus = typeof SUBSCRIPTION_STATUSES[number];
 
 export const CONTACT_PREFS = [
   'platform_only',
@@ -113,26 +141,88 @@ export type ListingType = typeof LISTING_TYPES[number];
 // ─── /users/{uid} ────────────────────────────────────────────────────────────
 
 export interface UserDoc {
+  // ── Core identity ──────────────────────────────────────────────────────────
   uid:                  string;          // = document ID = Firebase Auth UID
   username:             string;          // auto-generated from email prefix
   displayName:          string;          // full name entered at registration
-  email:                string;          // email address
+  email:                string;
   avatarUrl:            string | null;
   phone:                string | null;
+  city:                 string | null;   // added during onboarding
   province:             Province | null;
   bio:                  string | null;
-  // Security role — enforced by Firestore rules (always 'user' on create)
-  role:                 UserRole;
-  // Marketplace account category — chosen at registration
-  accountType:          AccountType;
-  isVerified:           boolean;
-  isSuspended:          boolean;
-  verificationStatus:   VerificationStatus;
+
+  // ── Security role (Firebase Auth claim level) ──────────────────────────────
+  role:                 UserRole;        // always 'user' on create; elevated by admin
+
+  // ── Marketplace account category ───────────────────────────────────────────
+  accountType:          AccountType;     // chosen at registration
+
+  // ── Account lifecycle ──────────────────────────────────────────────────────
+  accountStatus:        AccountStatus;   // 'active' | 'suspended' | 'deleted'
+  onboardingStatus:     OnboardingStatus;// 'incomplete' | 'verification_submitted' | 'complete'
+  onboardingComplete:   boolean;
+
+  // ── Verification ───────────────────────────────────────────────────────────
+  isVerified:              boolean;       // admin-managed legacy field
+  isSuspended:             boolean;       // admin-managed legacy field
+  verificationStatus:      VerificationStatus;
+  verificationSubmittedAt: Timestamp | null;
+  verificationUpdatedAt:   Timestamp | null;
+
+  // ── Subscription & package ─────────────────────────────────────────────────
+  subscriptionStatus:        SubscriptionStatus; // 'free' | 'basic' | 'premium' | 'enterprise'
+  activePackageId:           string | null;
+  packageName:               string;             // 'Free' | 'Starter' | 'Professional' | 'Enterprise'
+  listingAllowance:          number;             // max listings on current plan
+  featuredListingAllowance:  number;             // max featured listings
+
+  // ── Profile metadata ───────────────────────────────────────────────────────
   profileCompletion:    number;          // 0–100
   popiaConsentAccepted: boolean;
   listingCount:         number;
   createdAt:            Timestamp;
   updatedAt:            Timestamp;
+
+  // ── Extended onboarding / verification fields (optional) ───────────────────
+  // Written during the verification flow — role-specific.
+
+  // All roles
+  preferredContactMethod?: ContactPref;
+
+  // Buyer
+  preferredInterests?: string[];         // 'vehicles' | 'parts' | 'services' | 'insurance'
+
+  // Private Seller
+  sellerDeclaration?:  boolean;
+  authorisedToSell?:   boolean;
+
+  // Dealer
+  dealershipName?:     string;
+  companyRegNumber?:   string;
+  businessAddress?:    string;
+  authorisedRep?:      string;
+  vehicleTypesSold?:   string[];
+
+  // Parts Vendor
+  vendorName?:              string;
+  supplierType?:            string;   // 'new_parts' | 'used_parts' | 'oem' | 'aftermarket'
+  categoriesSupplied?:      string[];
+  vehicleMakesSupported?:   string[];
+  deliveryAreas?:           string;
+  warrantyPolicy?:          string;
+
+  // Workshop / Mechanic
+  tradingName?:         string;
+  rmiRegistered?:       boolean;
+  workshopType?:        string;   // 'rmi_workshop' | 'independent_mechanic' | 'mobile_mechanic'
+  servicesOffered?:     string[];
+  operatingHours?:      string;
+  serviceArea?:         string;
+  emergencyAvailable?:  boolean;
+
+  // Document tracking (filenames only — Storage upload deferred to Base 7)
+  documentsSubmitted?:  string[];
 }
 
 // ─── /vehicles/{vehicleId} ───────────────────────────────────────────────────
@@ -269,21 +359,10 @@ export interface AdminFlagDoc {
  *
  * Strip Firestore Timestamps for safe JSON serialisation.
  * Use this at the Server Component → Client Component boundary.
- *
- * Example:
- *   // In Server Component (page.tsx):
- *   const vehicle: VehicleDoc = await getVehicle(id);
- *   const serialized: SerializedVehicle = {
- *     ...vehicle,
- *     createdAt:   vehicle.createdAt.toDate().toISOString(),
- *     updatedAt:   vehicle.updatedAt.toDate().toISOString(),
- *     publishedAt: vehicle.publishedAt?.toDate().toISOString() ?? null,
- *   };
- *   return <VehicleDetailClient vehicle={serialized} />;
  */
 export type Serialized<T> = {
   [K in keyof T]: T[K] extends Timestamp
-    ? string                  // Timestamp → ISO date string
+    ? string
     : T[K] extends Timestamp | null
       ? string | null
       : T[K];

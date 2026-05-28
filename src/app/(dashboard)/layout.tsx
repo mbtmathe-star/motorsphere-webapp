@@ -16,48 +16,51 @@ const ACCOUNT_TYPE_TO_NAV: Record<AccountType, string> = {
   admin_preview:  'admin',
 };
 
-// ── Nav items by role ─────────────────────────────────────────────────────────
+// ── Nav items by role — canonical paths at /dashboard/* ──────────────────────
 
-const NAV_BY_ROLE: Record<string, { label: string; href: string }[]> = {
+const NAV_BY_ROLE: Record<string, { label: string; href: string; highlight?: boolean }[]> = {
   buyer: [
     { label: 'Overview',       href: '/dashboard' },
+    { label: 'My Dashboard',   href: '/dashboard/buyer' },
     { label: 'Saved Listings', href: '/saved' },
     { label: 'My Inquiries',   href: '/inquiries' },
     { label: 'Profile',        href: '/profile' },
   ],
   seller: [
     { label: 'Overview',       href: '/dashboard' },
-    { label: 'My Listings',    href: '/seller' },
+    { label: 'My Listings',    href: '/dashboard/seller' },
     { label: 'Create Listing', href: '/listings/new' },
     { label: 'Inquiries',      href: '/inquiries' },
-    { label: 'Verify Account', href: '/verify' },
+    { label: 'Verification',   href: '/dashboard/verification', highlight: true },
     { label: 'Profile',        href: '/profile' },
   ],
   dealer: [
     { label: 'Overview',         href: '/dashboard' },
-    { label: 'Stock Management', href: '/dealer' },
+    { label: 'Stock Management', href: '/dashboard/dealer' },
     { label: 'Add Stock',        href: '/listings/new' },
     { label: 'Leads',            href: '/inquiries' },
-    { label: 'Verify Account',   href: '/verify' },
+    { label: 'Verification',     href: '/dashboard/verification', highlight: true },
     { label: 'Profile',          href: '/profile' },
   ],
   vendor: [
     { label: 'Overview',       href: '/dashboard' },
-    { label: 'Inventory',      href: '/vendor' },
+    { label: 'Inventory',      href: '/dashboard/vendor' },
     { label: 'Add Part',       href: '/listings/new' },
     { label: 'Quote Requests', href: '/inquiries' },
+    { label: 'Verification',   href: '/dashboard/verification', highlight: true },
     { label: 'Profile',        href: '/profile' },
   ],
   workshop: [
     { label: 'Overview',         href: '/dashboard' },
-    { label: 'Services',         href: '/workshop' },
+    { label: 'Services',         href: '/dashboard/workshop' },
     { label: 'Booking Requests', href: '/inquiries' },
-    { label: 'RMI / Verify',     href: '/verify' },
+    { label: 'Verification',     href: '/dashboard/verification', highlight: true },
     { label: 'Profile',          href: '/profile' },
   ],
   admin: [
     { label: 'Moderation', href: '/admin' },
     { label: 'Overview',   href: '/dashboard' },
+    { label: 'Admin Hub',  href: '/dashboard/admin' },
     { label: 'Profile',    href: '/profile' },
   ],
 };
@@ -98,6 +101,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const displayName = profile?.displayName ?? user.email ?? 'User';
   const email       = profile?.email ?? user.email ?? '';
 
+  // Show a dot on the verification nav item if onboarding is incomplete
+  const needsOnboarding = profile && !profile.onboardingComplete;
+  const verificationStatus = profile?.verificationStatus ?? 'not_started';
+  const isUnderReview = verificationStatus === 'submitted' || verificationStatus === 'pending_review';
+
   const handleLogout = async () => {
     await logout();
     router.push('/');
@@ -126,30 +134,53 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </Link>
         </div>
 
-        {/* Role badge */}
-        <div className="px-5 py-3 border-b border-white/[.06] shrink-0">
+        {/* Role badge + onboarding status */}
+        <div className="px-5 py-3 border-b border-white/[.06] shrink-0 space-y-1.5">
           <span
             className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded text-white/60"
             style={{ background: 'rgba(255,255,255,.06)' }}
           >
             {roleLabel}
           </span>
+          {needsOnboarding && !isUnderReview && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+              <span className="text-[10px] text-amber-300 font-bold">Action required</span>
+            </div>
+          )}
+          {isUnderReview && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
+              <span className="text-[10px] text-blue-300 font-bold">Verification under review</span>
+            </div>
+          )}
+          {profile?.onboardingComplete && verificationStatus === 'approved' && (
+            <div className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              <span className="text-[10px] text-emerald-300 font-bold">Verified</span>
+            </div>
+          )}
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
           {navItems.map(item => {
             const active = pathname === item.href;
+            const showDot = item.href.includes('verification') && needsOnboarding && !isUnderReview;
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
+                className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-bold transition-colors ${
                   active ? 'text-white' : 'text-white/60 hover:text-white hover:bg-white/[.08]'
                 }`}
                 style={active ? { background: '#0866ff' } : {}}
               >
-                {item.label}
+                <span>{item.label}</span>
+                {showDot && (
+                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                )}
               </Link>
             );
           })}

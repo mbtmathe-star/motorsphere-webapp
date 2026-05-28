@@ -20,7 +20,9 @@
       "Bash(git add *)",
       "Bash(git commit -m 'feat\\(auth\\): Base 6A — real Firebase Auth + Firestore user profiles *)",
       "Bash(git commit -m 'design: glassmorphism category tiles — frosted glass over hero image *)",
-      "Bash(git commit -m 'design: replace SVG icons with emojis on category tiles *)"
+      "Bash(git commit -m 'design: replace SVG icons with emojis on category tiles *)",
+      "PowerShell(npm install -g vercel 2>&1)",
+      "PowerShell(vercel login)"
     ],
     "additionalDirectories": [
       "C:\\Users\\CASH CONVERTERS\\Desktop\\motorsphere\\motorsphere-webapp"

@@ -3,179 +3,126 @@
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { toNavKey } from '@/lib/accountType';
+import { getRoleDashboardPath } from '@/lib/permissions';
+import OnboardingBanner from '@/components/dashboard/OnboardingBanner';
 
-type HubConfig = {
-  greeting:     string;
-  desc:         string;
-  primaryCta:   string;
-  primaryHref:  string;
-  secondaryCta: string;
-  secondaryHref:string;
-  stats:      { label: string; value: string; href: string; color: string }[];
-  quickLinks: { label: string; href: string }[];
+// ── Verification status display ───────────────────────────────────────────────
+
+function verificationLabel(status: string | undefined): { label: string; color: string } {
+  switch (status) {
+    case 'not_required':   return { label: 'Not required', color: '#64748b' };
+    case 'not_started':    return { label: 'Not started',  color: '#dc2626' };
+    case 'submitted':      return { label: 'Under review', color: '#d97706' };
+    case 'pending_review': return { label: 'Pending review', color: '#d97706' };
+    case 'approved':       return { label: 'Approved ✓',   color: '#16a34a' };
+    case 'rejected':       return { label: 'Rejected',     color: '#dc2626' };
+    default:               return { label: 'Not started',  color: '#dc2626' };
+  }
+}
+
+function accountStatusLabel(status: string | undefined): { label: string; color: string } {
+  switch (status) {
+    case 'active':    return { label: 'Active',    color: '#16a34a' };
+    case 'suspended': return { label: 'Suspended', color: '#dc2626' };
+    case 'deleted':   return { label: 'Deleted',   color: '#dc2626' };
+    default:          return { label: 'Active',    color: '#16a34a' };
+  }
+}
+
+// ── Role-specific quick links ─────────────────────────────────────────────────
+
+const QUICK_LINKS: Record<string, { label: string; href: string }[]> = {
+  buyer: [
+    { label: 'Browse vehicles',              href: '/category/vehicles' },
+    { label: 'Search for parts',             href: '/category/parts' },
+    { label: 'Find a workshop',              href: '/workshops' },
+    { label: 'View saved listings',          href: '/saved' },
+  ],
+  seller: [
+    { label: 'Complete verification',        href: '/dashboard/verification' },
+    { label: 'View my listings',             href: '/dashboard/seller' },
+    { label: 'Browse the marketplace',       href: '/category/vehicles' },
+  ],
+  dealer: [
+    { label: 'Complete verification',        href: '/dashboard/verification' },
+    { label: 'View stock management',        href: '/dashboard/dealer' },
+    { label: 'Browse the marketplace',       href: '/category/vehicles' },
+  ],
+  vendor: [
+    { label: 'Complete verification',        href: '/dashboard/verification' },
+    { label: 'View inventory',               href: '/dashboard/vendor' },
+    { label: 'Browse the marketplace',       href: '/category/parts' },
+  ],
+  workshop: [
+    { label: 'Complete verification',        href: '/dashboard/verification' },
+    { label: 'View services',                href: '/dashboard/workshop' },
+    { label: 'View the workshop directory',  href: '/workshops' },
+  ],
+  admin: [
+    { label: 'Go to moderation',             href: '/admin' },
+    { label: 'Admin hub',                    href: '/dashboard/admin' },
+  ],
 };
 
-const HUBS: Record<string, HubConfig> = {
-  buyer: {
-    greeting:     'Welcome back',
-    desc:         'Track saved listings, manage inquiries and compare vehicles, parts and service providers.',
-    primaryCta:   'Browse Vehicles',
-    primaryHref:  '/category/vehicles',
-    secondaryCta: 'View Saved',
-    secondaryHref:'/saved',
-    stats: [
-      { label: 'Saved Listings',  value: '3',  href: '/saved',             color: '#0866ff' },
-      { label: 'Active Inquiries',value: '1',  href: '/inquiries',         color: '#06b351' },
-      { label: 'Recent Views',    value: '12', href: '/category/vehicles', color: '#df8a00' },
-    ],
-    quickLinks: [
-      { label: 'Search for a Toyota',          href: '/search?q=toyota' },
-      { label: 'Browse parts',                  href: '/category/parts' },
-      { label: 'Find a workshop near you',      href: '/workshops' },
-      { label: 'Get a vehicle insurance quote', href: '/insurance' },
-    ],
-  },
-  seller: {
-    greeting:     'Seller Hub',
-    desc:         'Create listings, upload vehicle details and track your approval status before going live.',
-    primaryCta:   'Create Listing',
-    primaryHref:  '/listings/new',
-    secondaryCta: 'View My Listings',
-    secondaryHref:'/seller',
-    stats: [
-      { label: 'Active Listings',    value: '1', href: '/seller',    color: '#06b351' },
-      { label: 'Pending Approval',   value: '1', href: '/seller',    color: '#df8a00' },
-      { label: 'Inquiries Received', value: '2', href: '/inquiries', color: '#0866ff' },
-    ],
-    quickLinks: [
-      { label: 'Create new listing', href: '/listings/new' },
-      { label: 'Verify account',     href: '/verify' },
-      { label: 'View inquiries',     href: '/inquiries' },
-    ],
-  },
-  dealer: {
-    greeting:     'Dealer Dashboard',
-    desc:         'Manage dealership stock, leads, business information and verification status on MotorSphere.',
-    primaryCta:   'Add Stock',
-    primaryHref:  '/listings/new',
-    secondaryCta: 'View Stock',
-    secondaryHref:'/dealer',
-    stats: [
-      { label: 'Vehicles in Stock', value: '12', href: '/dealer',    color: '#06b351' },
-      { label: 'Active Leads',      value: '5',  href: '/inquiries', color: '#0866ff' },
-      { label: 'Pending Listings',  value: '2',  href: '/dealer',    color: '#df8a00' },
-    ],
-    quickLinks: [
-      { label: 'Add new vehicle',   href: '/listings/new' },
-      { label: 'View all leads',    href: '/inquiries' },
-      { label: 'Verify dealership', href: '/verify' },
-    ],
-  },
-  vendor: {
-    greeting:     'Parts Vendor Hub',
-    desc:         'Manage parts inventory, compatibility details, inquiries and your supplier visibility on MotorSphere.',
-    primaryCta:   'Add Part',
-    primaryHref:  '/listings/new',
-    secondaryCta: 'Manage Inventory',
-    secondaryHref:'/vendor',
-    stats: [
-      { label: 'Parts Listed',     value: '28', href: '/vendor',    color: '#06b351' },
-      { label: 'Quote Requests',   value: '4',  href: '/inquiries', color: '#0866ff' },
-      { label: 'Low Stock Alerts', value: '3',  href: '/vendor',    color: '#ff3d0a' },
-    ],
-    quickLinks: [
-      { label: 'Add new part',        href: '/listings/new' },
-      { label: 'View quote requests', href: '/inquiries' },
-      { label: 'Update profile',      href: '/profile' },
-    ],
-  },
-  workshop: {
-    greeting:     'Workshop Dashboard',
-    desc:         'Manage services, quote requests, RMI status and customer leads. Build your automotive service profile on MotorSphere.',
-    primaryCta:   'Manage Services',
-    primaryHref:  '/workshop',
-    secondaryCta: 'View Bookings',
-    secondaryHref:'/inquiries',
-    stats: [
-      { label: 'Services Listed',  value: '6',       href: '/workshop',  color: '#06b351' },
-      { label: 'Booking Requests', value: '3',       href: '/inquiries', color: '#0866ff' },
-      { label: 'RMI Status',       value: 'Pending', href: '/verify',    color: '#df8a00' },
-    ],
-    quickLinks: [
-      { label: 'Apply for RMI badge',   href: '/verify' },
-      { label: 'View booking requests', href: '/inquiries' },
-      { label: 'Update services',       href: '/workshop' },
-    ],
-  },
-  admin: {
-    greeting:     'Admin Panel',
-    desc:         'Review listings, approve or reject submissions, monitor flagged content and support marketplace integrity.',
-    primaryCta:   'Go to Moderation',
-    primaryHref:  '/admin',
-    secondaryCta: 'View Audit Log',
-    secondaryHref:'/admin',
-    stats: [
-      { label: 'Pending Listings', value: '7', href: '/admin', color: '#df8a00' },
-      { label: 'Flagged Listings', value: '2', href: '/admin', color: '#ff3d0a' },
-      { label: 'Verifications',    value: '3', href: '/admin', color: '#0866ff' },
-    ],
-    quickLinks: [
-      { label: 'Review pending listings', href: '/admin' },
-      { label: 'Check verifications',     href: '/admin' },
-      { label: 'View fraud flags',        href: '/admin' },
-    ],
-  },
-};
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const { user, profile } = useAuth();
 
-  // Dashboard layout handles the auth guard — by the time we reach here, user is set
   if (!user) return null;
 
-  const navKey = toNavKey(profile?.accountType);
-  const hub    = HUBS[navKey] ?? HUBS.buyer;
-  const name   = profile?.displayName ?? user.email ?? 'there';
+  const navKey    = toNavKey(profile?.accountType);
+  const quickLinks = QUICK_LINKS[navKey] ?? QUICK_LINKS.buyer;
+  const name      = profile?.displayName ?? user.email ?? 'there';
+
+  const vStatus   = verificationLabel(profile?.verificationStatus);
+  const aStatus   = accountStatusLabel(profile?.accountStatus);
+  const rolePath  = getRoleDashboardPath(profile?.accountType);
 
   return (
     <div className="space-y-6">
+
+      {/* Greeting */}
       <div>
-        <h1 className="text-2xl font-black text-gray-900">
-          {hub.greeting}, {name}
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">{hub.desc}</p>
+        <h1 className="text-2xl font-black text-gray-900">Welcome back, {name}</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Here&apos;s an overview of your MotorSphere account.
+        </p>
       </div>
 
-      {/* Stats */}
+      {/* Onboarding banner */}
+      <OnboardingBanner />
+
+      {/* Account status cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {hub.stats.map(stat => (
-          <Link
-            key={stat.label}
-            href={stat.href}
-            className="bg-white rounded-xl border border-gray-100 p-5 hover:shadow-md transition-shadow"
-          >
-            <div className="text-2xl font-black" style={{ color: stat.color }}>
-              {stat.value}
-            </div>
-            <div className="text-sm text-gray-500 mt-1">{stat.label}</div>
-          </Link>
-        ))}
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="text-xs text-gray-400 font-bold mb-1">Account status</div>
+          <div className="text-lg font-black" style={{ color: aStatus.color }}>{aStatus.label}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="text-xs text-gray-400 font-bold mb-1">Verification</div>
+          <div className="text-lg font-black" style={{ color: vStatus.color }}>{vStatus.label}</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
+          <div className="text-xs text-gray-400 font-bold mb-1">Current plan</div>
+          <div className="text-lg font-black text-gray-900">{profile?.packageName ?? 'Free'}</div>
+        </div>
       </div>
 
-      {/* CTAs */}
+      {/* CTA row */}
       <div className="flex flex-wrap gap-3">
         <Link
-          href={hub.primaryHref}
+          href={rolePath}
           className="px-5 py-2.5 rounded-lg text-sm font-black text-white hover:opacity-90 transition-opacity"
           style={{ background: '#0866ff' }}
         >
-          {hub.primaryCta}
+          Go to my dashboard →
         </Link>
         <Link
-          href={hub.secondaryHref}
+          href="/dashboard/verification"
           className="px-5 py-2.5 rounded-lg text-sm font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition-colors"
         >
-          {hub.secondaryCta}
+          {profile?.onboardingComplete ? 'View verification status' : 'Complete onboarding'}
         </Link>
       </div>
 
@@ -183,8 +130,8 @@ export default function DashboardPage() {
       <div className="bg-white rounded-xl border border-gray-100 p-5">
         <h2 className="text-sm font-black text-gray-700 mb-3">Quick actions</h2>
         <ul className="space-y-2">
-          {hub.quickLinks.map(link => (
-            <li key={link.label}>
+          {quickLinks.map(link => (
+            <li key={link.href}>
               <Link href={link.href} className="text-sm font-bold text-[#0866ff] hover:underline">
                 → {link.label}
               </Link>
@@ -192,6 +139,7 @@ export default function DashboardPage() {
           ))}
         </ul>
       </div>
+
     </div>
   );
 }

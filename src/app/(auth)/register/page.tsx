@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signUp } from '@/lib/firebase/auth';
 import { createUserProfile } from '@/lib/firebase/users';
+import { getRoleDashboardPath } from '@/lib/permissions';
 import type { AccountType } from '@/types/firestore.types';
 
 type Step = 'form' | 'role';
@@ -117,8 +118,11 @@ export default function RegisterPage() {
         popiaConsentAccepted: true,
       });
 
-      // 3. Navigate to dashboard — auth state will resolve via AuthProvider
-      router.push('/dashboard');
+      // 3. Navigate to role-specific dashboard path
+      //    buyers → /dashboard/buyer
+      //    sellers/dealers/vendors/workshops → /dashboard/verification
+      const destination = getRoleDashboardPath(selectedRole);
+      router.push(destination);
     } catch (err: unknown) {
       const msg = friendlyError(err);
 
