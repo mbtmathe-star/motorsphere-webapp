@@ -3,8 +3,8 @@ import SiteHeader from '@/components/home/SiteHeader';
 import SponsoredListingsSection from '@/components/home/SponsoredListingsSection';
 import FeaturedListingsPreview from '@/components/home/FeaturedListingsPreview';
 import BrowseCategoriesSection from '@/components/home/BrowseCategoriesSection';
-import FeaturedBusinessesSection from '@/components/home/FeaturedBusinessesSection';
 import AuctionOpportunitiesSection from '@/components/home/AuctionOpportunitiesSection';
+import ListingPackagesSection from '@/components/home/ListingPackagesSection';
 import AdvertisePartnerSection from '@/components/home/AdvertisePartnerSection';
 import TrustSection from '@/components/home/TrustSection';
 import SiteFooter from '@/components/home/SiteFooter';
@@ -19,8 +19,8 @@ export default function HomePage() {
           <SponsoredListingsSection />
           <FeaturedListingsPreview />
           <BrowseCategoriesSection />
-          <FeaturedBusinessesSection />
           <AuctionOpportunitiesSection />
+          <ListingPackagesSection />
           <AdvertisePartnerSection />
           <TrustSection />
         </div>
