@@ -298,6 +298,30 @@
       display: none;
     }
   }
+
+  /* Auto-sliding carousel — Sponsored Listings */
+  .ms-auto-carousel {
+    overflow: hidden;
+  }
+
+  .ms-auto-carousel-track {
+    display: flex;
+    width: max-content;
+    animation: ms-carousel-slide 22s linear infinite;
+  }
+
+  .ms-auto-carousel-track:hover {
+    animation-play-state: paused;
+  }
+
+  @keyframes ms-carousel-slide {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ms-auto-carousel-track { animation: none; }
+  }
 }
 
 @theme inline {

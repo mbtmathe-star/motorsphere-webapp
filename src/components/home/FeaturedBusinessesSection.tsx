@@ -19,17 +19,21 @@ export default function FeaturedBusinessesSection() {
       <div className="flex items-end justify-between gap-4 mb-5 flex-wrap">
         <div>
           <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-[#eef4ff] text-[#0866ff] text-[11px] font-black uppercase tracking-[.07em] mb-2">
-            Directory
+            Featured businesses
           </span>
           <h2 className="m-0 text-[clamp(26px,3.8vw,40px)] font-black tracking-[-0.045em] text-[#121826] leading-none">
-            Trusted Service Providers
+            Featured Businesses
           </h2>
+          <p className="m-0 mt-2 text-[14px] text-[#687589] leading-[1.65] max-w-[680px]">
+            Explore automotive businesses listed on MotorSphere, including dealerships, workshops,
+            parts suppliers, towing services, tracking providers and insurance-related service providers.
+          </p>
         </div>
         <Link
-          href="/partnerships"
-          className="hidden sm:inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-black bg-[#eef4ff] text-[#0866ff] border border-[#dbe8ff] hover:bg-[#dbe8ff] transition-colors pb-1 shrink-0"
+          href="/search"
+          className="hidden sm:inline-flex items-center gap-1 px-4 py-2.5 rounded-xl text-sm font-black bg-[#eef4ff] text-[#0866ff] border border-[#dbe8ff] hover:bg-[#dbe8ff] transition-colors shrink-0"
         >
-          All Partners &rarr;
+          Browse Businesses &rarr;
         </Link>
       </div>
 
@@ -99,10 +103,10 @@ export default function FeaturedBusinessesSection() {
       {/* CTAs */}
       <div className="mt-5 flex flex-wrap gap-3">
         <Link
-          href="/partnerships"
+          href="/search"
           className="px-4 py-2.5 rounded-xl text-sm font-black bg-[#0866ff] text-white hover:bg-[#064dc1] transition-colors"
         >
-          Partnership Opportunities
+          Browse Businesses
         </Link>
         <Link
           href="/advertise"

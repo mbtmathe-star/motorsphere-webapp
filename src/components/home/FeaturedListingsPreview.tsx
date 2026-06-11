@@ -10,6 +10,8 @@ const statusStyles: Record<string, { bg: string; color: string }> = {
   purple: { bg: '#ede9fe', color: '#5b21b6' },
 };
 
+const displayListings = featuredListings.slice(0, 4);
+
 export default function FeaturedListingsPreview() {
   return (
     <section className="mb-10">
@@ -23,7 +25,7 @@ export default function FeaturedListingsPreview() {
             Featured Listings
           </h2>
         </div>
-        <div className="hidden sm:flex gap-2.5 pb-1">
+        <div className="flex gap-2.5 pb-1 shrink-0">
           <Link
             href="/search"
             className="px-4 py-2.5 rounded-xl text-sm font-black bg-[#0866ff] text-white hover:bg-[#064dc1] transition-colors"
@@ -39,18 +41,18 @@ export default function FeaturedListingsPreview() {
         </div>
       </div>
 
-      {/* Listing card rail */}
-      <div className="ms-rail gap-4">
-        {featuredListings.map(listing => {
+      {/* Listings grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {displayListings.map(listing => {
           const sty = statusStyles[listing.statusVariant] ?? { bg: '#f0f0f0', color: '#444' };
           return (
             <Link
               key={listing.id}
               href={`/listing/${listing.id}`}
-              className="flex-none snap-start block w-[256px] group"
+              className="block group"
             >
               <article
-                className="overflow-hidden bg-white rounded-[20px] transition-all duration-200 group-hover:-translate-y-1"
+                className="overflow-hidden bg-white rounded-[20px] h-full transition-all duration-200 group-hover:-translate-y-1"
                 style={{
                   boxShadow: '0 4px 20px rgba(15,23,42,.09)',
                   border: '1px solid rgba(0,0,0,.06)',
@@ -72,7 +74,6 @@ export default function FeaturedListingsPreview() {
                   >
                     {listing.status}
                   </span>
-                  {/* Meta chips at image bottom */}
                   <div className="absolute bottom-2.5 right-2.5 flex gap-1.5">
                     {listing.meta.slice(0, 2).map(m => (
                       <span
@@ -108,22 +109,6 @@ export default function FeaturedListingsPreview() {
             </Link>
           );
         })}
-      </div>
-
-      {/* Mobile CTAs */}
-      <div className="mt-5 flex gap-3 sm:hidden">
-        <Link
-          href="/search"
-          className="flex-1 text-center px-4 py-2.5 rounded-xl text-sm font-black bg-[#0866ff] text-white hover:bg-[#064dc1] transition-colors"
-        >
-          View All Listings
-        </Link>
-        <Link
-          href="/auctions"
-          className="flex-1 text-center px-4 py-2.5 rounded-xl text-sm font-black bg-[#eef4ff] text-[#0866ff] border border-[#dbe8ff] hover:bg-[#dbe8ff] transition-colors"
-        >
-          Auctions
-        </Link>
       </div>
     </section>
   );
