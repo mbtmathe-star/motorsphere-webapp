@@ -1976,7 +1976,7 @@ Use page-level skeleton for:
 
 ### 16.8 Vercel Deployment Setup
 
-> **Netlify is no longer the active hosting provider.** `netlify.toml` is archived. Active hosting is Vercel. See `vercel.json`.
+> Active hosting provider: **Vercel**. See `vercel.json`.
 
 ```
 [ ] Firebase CLI installed globally: npm install -g firebase-tools

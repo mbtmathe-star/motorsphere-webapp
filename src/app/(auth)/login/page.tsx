@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from '@/lib/firebase/auth';
@@ -34,16 +34,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(null);
-  const [notice,   setNotice]   = useState<string | null>(null);
-
-  // Read ?notice= from the URL without useSearchParams (avoids Suspense requirement)
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
+  // Read ?notice= from the URL without useSearchParams (avoids Suspense requirement).
+  // Lazy initializer runs client-side only — safe because this is a "use client" component.
+  const [notice] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
     const params = new URLSearchParams(window.location.search);
-    if (params.get('notice') === 'account-created') {
-      setNotice('Your account was created. Sign in below to access your dashboard.');
-    }
-  }, []);
+    return params.get('notice') === 'account-created'
+      ? 'Your account was created. Sign in below to access your dashboard.'
+      : null;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

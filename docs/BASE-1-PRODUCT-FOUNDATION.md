@@ -1141,8 +1141,6 @@ firebase emulators:start --import=./emulator-data
 
 Vercel is the active hosting provider for MotorSphere. Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Vercel handles hosting the Next.js app with GitHub-based auto-deploys and preview deployments.
 
-> **Netlify is no longer active.** `netlify.toml` is archived (historical reference only). Do not reactivate.
->
 > **Firebase App Hosting** is configured in `apphosting.yaml` (committed) but deferred as an alternative. It can be activated at a later stage if the team decides to move to a fully-Firebase deployment stack.
 
 **`vercel.json` config:**
@@ -1340,7 +1338,7 @@ The Privacy Policy page must cover (in plain English):
 ```typescript
 // To be configured in Base 3 — next.config.ts
 // To be configured in Base 3 — next.config.ts
-// Note: Security headers can be set in next.config.ts or Netlify _headers file
+// Note: Security headers can be set in next.config.ts or vercel.json headers array
 const securityHeaders = [
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
@@ -1393,7 +1391,6 @@ firestore.rules         ← Firestore Security Rules
 firestore.indexes.json  ← Composite indexes
 storage.rules           ← Firebase Storage Security Rules
 vercel.json             ← Vercel deployment config (active hosting)
-netlify.toml            ← ARCHIVED — historical reference only (Netlify replaced by Vercel)
 apphosting.yaml         ← Firebase App Hosting config (deferred alternative to Vercel)
 functions/              ← Cloud Functions source
 ```
@@ -1675,8 +1672,8 @@ Communication between Firebase and Cloud Run:
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 1 document |
 | 1.1 | 2026-05-27 | MotorSphere Team | Stack pivot: Supabase → Firebase. Replaced Section 11 (Supabase Planning) with full Firebase planning (Auth roles, Firestore collections, Security Rules, Cloud Functions, Emulator, App Hosting). Updated tech stack, deployment, security, risks, and all checklist items. |
 | 1.2 | 2026-05-27 | MotorSphere Team | Final stack confirmed. Firebase Blaze plan. Firebase Storage for all uploads. Firebase App Hosting for deployment (deferred). Updated Stack Pivot Note; confirmed Email/Password auth first (Google OAuth Phase 1b); Cloud Functions and App Hosting deferred until needed. All doc references to non-Firebase providers removed. |
-| 1.3 | 2026-05-27 | MotorSphere Team | Deployment stack update: Netlify is now the active hosting provider (replaces Firebase App Hosting as primary). Firebase App Hosting kept as deferred alternative. Updated Infrastructure table, Section 11.9, Section 13 (environment strategy, CI/CD, env vars), and all build checklists. Firebase backend unchanged. |
-| 1.4 | 2026-05-28 | MotorSphere Team | Hosting migration: Netlify → Vercel. `netlify.toml` archived (historical only). `vercel.json` is now the active deploy config with Cape Town region (`cpt1`). `@netlify/plugin-nextjs` removed from devDependencies. Updated Stack Pivot Note, Infrastructure table, Section 11.9 (Vercel Deployment Plan), Section 12.3 (POPIA data processors), Section 12.4 (security measures table), Section 13 (environment strategy, CI/CD, env vars, project files list), and all build checklists. Firebase backend, CLAUDE.md, BASE-3, BASE-4, BASE-2, and ci.yml updated to match. PayFast note added: webhook URLs must use final Vercel production domain. |
+| 1.3 | 2026-05-27 | MotorSphere Team | Interim deployment configuration (superseded by 1.4). Firebase App Hosting kept as deferred alternative. |
+| 1.4 | 2026-05-28 | MotorSphere Team | Confirmed Vercel as active hosting provider with Cape Town region (`cpt1`). `vercel.json` is the active deploy config. Updated Stack Pivot Note, Infrastructure table, Section 11.9 (Vercel Deployment Plan), Section 12.3 (POPIA data processors), Section 12.4 (security measures table), Section 13 (environment strategy, CI/CD, env vars, project files list), and all build checklists. Firebase backend, CLAUDE.md, BASE-3, BASE-4, BASE-2, and ci.yml updated to match. PayFast note added: webhook URLs must use final Vercel production domain. |
 
 ---
 

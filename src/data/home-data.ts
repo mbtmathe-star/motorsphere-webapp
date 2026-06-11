@@ -8,23 +8,23 @@ export type Slide = {
 
 export const heroSlides: Slide[] = [
   {
+    id: 'ecosystem',
+    title: "South Africa's Complete Automotive Ecosystem",
+    subtitle: 'Vehicles, parts, services, insurance, workshops and more — in one trusted platform',
+    image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1920&q=80',
+    route: '/category/vehicles',
+  },
+  {
     id: 'parts',
-    title: 'Quality Parts at Unbeatable Prices',
-    subtitle: 'Genuine OEM and aftermarket parts for all makes and models',
+    title: 'Find Verified Parts, Services & Providers',
+    subtitle: 'New and used parts, RMI workshops, mechanics and panelbeaters across South Africa',
     image: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=1920&q=80',
     route: '/category/parts',
   },
   {
-    id: 'roadside',
-    title: '24/7 Emergency Roadside Assistance',
-    subtitle: 'Help is just a call away — anywhere, anytime',
-    image: 'https://images.unsplash.com/photo-1487754180451-c456f719a1fc?auto=format&fit=crop&w=1920&q=80',
-    route: '/category/emergency-roadside',
-  },
-  {
     id: 'insurance',
-    title: 'Premium Car Insurance — Save up to 30%',
-    subtitle: 'Get comprehensive coverage with the best rates in South Africa',
+    title: 'Insurance, Finance & Protection — All in One Place',
+    subtitle: 'Compare vehicle insurance options and connect with financial service providers',
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1920&q=80',
     route: '/insurance',
   },
@@ -46,7 +46,7 @@ const U = (id: string) =>
 
 export const categories: Category[] = [
   {
-    id: 'vehicles', label: 'Vehicle Search', color: '#0866ff', icon: 'car', emoji: '🚗',
+    id: 'vehicles', label: 'Vehicles', color: '#0866ff', icon: 'car', emoji: '🚗',
     image: U('1492144534655-ae79c964c9d7'),   // silver sports car on road
     desc: 'Browse verified private and dealer vehicle listings.',
   },
@@ -86,9 +86,9 @@ export const categories: Category[] = [
     desc: 'Registered dealership profiles and stock.',
   },
   {
-    id: 'insurance', label: 'Vehicle Insurance', color: '#0899b8', icon: 'shield', emoji: '🛡️',
+    id: 'insurance', label: 'Insurance & Finance', color: '#0899b8', icon: 'shield', emoji: '🛡️',
     image: U('1560518883-ce09059eeffa'),      // car keys on document
-    desc: 'Quote requests and policy comparison.',
+    desc: 'Insurance, vehicle finance and protection options.',
   },
   {
     id: 'rmi-workshops', label: 'RMI Workshops', color: '#4a35f5', icon: 'hardhat', emoji: '🏅',
@@ -109,6 +109,11 @@ export const categories: Category[] = [
     id: 'emergency-roadside', label: 'Emergency Roadside', color: '#ff003b', icon: 'emergency', emoji: '🚨',
     image: U('1587815073078-f636169821e3'),   // roadside emergency / warning lights
     desc: '24/7 emergency roadside assistance.',
+  },
+  {
+    id: 'accessories', label: 'Accessories', color: '#c2410c', icon: 'package', emoji: '🎨',
+    image: U('1503376780353-7e6692767b70'),   // vehicle detail / SUV
+    desc: 'Vehicle accessories, modifications and fitment.',
   },
 ];
 
@@ -210,13 +215,14 @@ export const featuredListings: Listing[] = [
 ];
 
 export const tickerItems = [
-  'Quality Parts at Competitive Prices',
-  '24/7 Emergency Roadside Assistance Available',
-  'Certified RMI Workshops in Your Area',
-  'Get Instant Vehicle Insurance Quotes',
-  'Secure Listings and Verified Sellers',
-  'Admin Approved Listings Only',
-  "South Africa's Trusted Automotive Marketplace",
+  "South Africa's Complete Automotive Ecosystem",
+  'Vehicles · Parts · Services · Insurance · Finance',
+  'Verified Sellers — Admin Approved Listings Only',
+  'Find Trusted Workshops, Mechanics and Panelbeaters',
+  'Compare Vehicle Insurance and Finance Options',
+  'Towing, Roadside and Emergency Support Nationwide',
+  'One Platform — Every Part of Vehicle Ownership',
+  'Auction Partner Listings Coming Soon',
 ];
 
 export const trustCards = [
@@ -245,26 +251,26 @@ export const trustCards = [
 export const ecosystemServices = [
   {
     icon: 'shield',
-    title: 'Vehicle Insurance',
-    desc: 'Compare vehicle insurance options and get quotes from trusted South African providers.',
+    title: 'Insurance & Finance',
+    desc: 'Compare vehicle insurance options and connect with finance and protection providers.',
     route: '/insurance',
   },
   {
     icon: 'emergency',
-    title: 'Roadside Assistance',
+    title: 'Roadside & Towing',
     desc: 'Access towing and emergency roadside support anywhere in South Africa, 24 hours a day.',
     route: '/roadside',
   },
   {
     icon: 'hardhat',
-    title: 'Workshops',
+    title: 'Workshops & Services',
     desc: 'Find RMI-accredited and independent service providers, mechanics and bodyshops near you.',
     route: '/workshops',
   },
   {
     icon: 'car',
-    title: 'Auctions',
-    desc: 'Bid on vehicles, parts and salvage lots from verified sellers. Auction listings coming soon.',
+    title: 'Auction Partners',
+    desc: 'MotorSphere connects buyers with established auction partners. Auction listings coming soon.',
     route: '/auctions',
   },
 ];
@@ -293,11 +299,11 @@ export const howItWorksSteps = [
 ];
 
 export const roles = [
-  { id: 'buyer',    title: 'Buyer',          desc: 'Search verified listings, save favourites, send inquiries and compare vehicles, parts and services.', route: '/register' },
-  { id: 'seller',   title: 'Private Seller', desc: 'Create listings, upload vehicle details and track your approval status before going live.', route: '/register' },
-  { id: 'dealer',   title: 'Dealer',         desc: 'Manage dealership stock, leads, business verification and your storefront on MotorSphere.', route: '/register' },
-  { id: 'vendor',   title: 'Parts Vendor',   desc: 'List parts and spares, manage inventory, set compatibility details and respond to buyer inquiries.', route: '/register' },
-  { id: 'workshop', title: 'Workshop',       desc: 'Advertise your services, receive booking requests, display your RMI status and build customer trust.', route: '/register' },
+  { id: 'buyer',    title: 'Buyer',          desc: 'Search verified vehicle listings, save favourites, send inquiries and compare vehicles, parts and services across the ecosystem.', route: '/register' },
+  { id: 'seller',   title: 'Private Seller', desc: 'Create listings, upload vehicle details and track your approval status. Reach buyers across South Africa.', route: '/register' },
+  { id: 'dealer',   title: 'Dealer',         desc: 'Manage your full stock, leads and dealership profile. Get verified and grow your reach on MotorSphere.', route: '/register' },
+  { id: 'vendor',   title: 'Parts Vendor',   desc: 'List parts and spares, manage inventory, set compatibility details and respond to buyer inquiries nationwide.', route: '/register' },
+  { id: 'workshop', title: 'Workshop',       desc: 'Advertise your services, display your RMI status, receive booking requests and build your digital presence.', route: '/register' },
 ];
 
 // More seeded listings for category pages / search

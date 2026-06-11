@@ -408,7 +408,7 @@ export default function ListingDetailPage({ params }: { params: Promise<{ id: st
 
     fetch();
     return () => { cancelled = true; };
-  }, [id, seeded]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, seeded]);
 
   // ── Render based on state ──────────────────────────────────────────────────
 

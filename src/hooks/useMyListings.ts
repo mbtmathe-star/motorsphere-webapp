@@ -30,13 +30,7 @@ export function useMyListings(): UseMyListingsReturn {
   const [loading,   setLoading]  = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setListings([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
+    if (!user) return;
 
     const unsub = subscribeUserListings(user.uid, docs => {
       setListings(docs);
@@ -45,6 +39,10 @@ export function useMyListings(): UseMyListingsReturn {
 
     return unsub;
   }, [user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!user) {
+    return { listings: [], loading: false, draftCount: 0, pendingCount: 0, activeCount: 0, rejectedCount: 0 };
+  }
 
   const draftCount    = listings.filter(l => l.status === 'draft').length;
   const pendingCount  = listings.filter(l => ['submitted', 'pending_review'].includes(l.status)).length;

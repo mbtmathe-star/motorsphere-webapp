@@ -26,9 +26,18 @@ const firebaseConfig = {
 // Prevent duplicate initialisation during Next.js hot reload
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-export const auth    = getAuth(app);
-export const db      = getFirestore(app);
-export const storage = getStorage(app);
+// Guard SDK service init against server-side module evaluation.
+// Next.js may evaluate 'use client' import chains on the server during
+// static generation. Auth/Firestore/Storage require a browser context
+// and throw "auth/invalid-api-key" when initialised server-side.
+// All actual usage is inside useEffect hooks which never run on the server.
+const isBrowser = typeof window !== 'undefined';
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const auth    = isBrowser ? getAuth(app)      : null as any;
+export const db      = isBrowser ? getFirestore(app) : null as any;
+export const storage = isBrowser ? getStorage(app)   : null as any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // ─── Connect to local Firebase Emulators in development ──────────────────────
 // Requires BOTH:

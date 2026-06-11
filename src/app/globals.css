@@ -284,6 +284,20 @@
   @media (prefers-reduced-motion: reduce) {
     .marquee-track { animation: none; }
   }
+
+  /* Marketplace horizontal scroll rail — used on homepage listing/category rails */
+  .ms-rail {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding-bottom: 6px;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
 
 @theme inline {

@@ -10,7 +10,7 @@ import { canSubmitListing } from '@/lib/permissions';
 
 export default function WorkshopDashboardPage() {
   const { user, profile } = useAuth();
-  const { listings, loading, activeCount, pendingCount, draftCount } = useMyListings();
+  const { listings, loading, activeCount, pendingCount } = useMyListings();
   if (!user) return null;
 
   const name         = profile?.displayName ?? user.email ?? 'there';
@@ -101,6 +101,12 @@ export default function WorkshopDashboardPage() {
       {(listings.length > 0 || loading) && (
         <MyListingsSection listings={listings} loading={loading} />
       )}
+
+      {/* Workshop note */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-500">
+        <p className="font-black text-gray-700 mb-1">Workshop on MotorSphere</p>
+        Your workshop profile is part of South Africa&rsquo;s complete automotive ecosystem — connecting you with vehicle owners, buyers, dealers and parts seekers who need trusted service providers. All service listings require admin approval. Data handled in accordance with POPIA.
+      </div>
 
       <PackageCard />
 

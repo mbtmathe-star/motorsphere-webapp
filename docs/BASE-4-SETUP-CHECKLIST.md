@@ -53,7 +53,6 @@ These were completed during Base 3 scaffold (2026-05-27). Verify each file exist
 - [x] `firebase.json` — Emulator ports: Auth 9099, Firestore 8080, Storage 9199, Functions 5001, UI 4000
 - [x] `.firebaserc` — staging + prod project aliases
 - [x] `vercel.json` — Vercel deployment config (framework: nextjs, region: cpt1 Cape Town)
-- [x] `netlify.toml` — archived (historical only — Netlify replaced by Vercel)
 - [x] `apphosting.yaml` — Firebase App Hosting config (committed, deferred alternative to Vercel)
 
 ### 1.5 — Cloud Functions Scaffold
@@ -183,8 +182,6 @@ Image compression (resize to max 1200px + WebP conversion) will be done by `onIm
 >
 > These tasks are completed once — not required before every Base stage, but should be done before the first staging preview is shared externally.
 >
-> **Netlify is no longer active.** `netlify.toml` is archived. Do not reactivate it.
-
 ### 4.1 — Vercel Project Setup
 - [ ] Create a Vercel account at [vercel.com](https://vercel.com) (if not already)
 - [ ] Import the GitHub repository: Vercel Dashboard → Add New → Project → Import Git Repository
@@ -467,8 +464,8 @@ The `/admin/{userId}/verify/` storage path is private — only the owner and adm
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 4 setup checklist. Full Firebase stack (Auth + Firestore + Storage + App Hosting deferred). Separated Claude Code tasks, Firebase Console tasks, Storage tasks, App Hosting (deferred), env var checklist, emulator verification, and security warnings. |
-| 1.1 | 2026-05-27 | MotorSphere Team | Deployment stack update: Netlify is now the active hosting provider. Firebase App Hosting kept as deferred alternative. Section 4 replaced with Netlify deployment tasks. Section 5.4 updated to Netlify environment variables. |
-| 1.2 | 2026-05-28 | MotorSphere Team | Hosting migration: Netlify → Vercel. Section 4 replaced with Vercel deployment tasks (project setup, env vars, preview deployments, authorised Firebase domains, PayFast domain note, Firebase App Hosting still deferred). Section 5.4 updated to Vercel. Section 1.4 updated to reference vercel.json. netlify.toml archived. |
+| 1.1 | 2026-05-27 | MotorSphere Team | Interim deployment configuration (superseded by 1.2). Firebase App Hosting kept as deferred alternative. |
+| 1.2 | 2026-05-28 | MotorSphere Team | Confirmed Vercel as active hosting provider. Section 4 replaced with Vercel deployment tasks (project setup, env vars, preview deployments, authorised Firebase domains, PayFast domain note, Firebase App Hosting still deferred). Section 5.4 updated to Vercel. Section 1.4 updated to reference vercel.json. |
 
 ---
 

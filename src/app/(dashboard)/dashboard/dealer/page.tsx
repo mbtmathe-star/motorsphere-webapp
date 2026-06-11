@@ -78,7 +78,7 @@ export default function DealerDashboardPage() {
 
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-500">
         <p className="font-black text-gray-700 mb-1">Dealer accountability</p>
-        All stock requires admin approval. MotorSphere verifies registered dealers to protect buyers and maintain marketplace integrity.
+        All stock requires admin approval before going live. MotorSphere verifies registered dealers to protect buyers and maintain platform integrity. As a verified dealer on MotorSphere, your profile is part of South Africa&rsquo;s complete automotive ecosystem — connecting your stock with buyers, finance partners and service providers in one place. All data handled in accordance with POPIA.
       </div>
 
       <PackageCard />

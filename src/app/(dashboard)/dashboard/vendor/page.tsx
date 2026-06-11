@@ -76,6 +76,12 @@ export default function VendorDashboardPage() {
       {/* My listings */}
       <MyListingsSection listings={listings} loading={loading} />
 
+      {/* Vendor note */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-500">
+        <p className="font-black text-gray-700 mb-1">Parts vendor on MotorSphere</p>
+        Your parts inventory is part of South Africa&rsquo;s complete automotive ecosystem — reaching buyers, mechanics, workshops and dealerships looking for compatible parts. All listings require admin approval before going live. Data handled in accordance with POPIA.
+      </div>
+
       <PackageCard />
 
     </div>

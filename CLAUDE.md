@@ -211,7 +211,6 @@ Emulator toggle: `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` in `.env.local`
 - `FIREBASE_ADMIN_PRIVATE_KEY`: paste the full key with literal `\n` for newlines
 - `NEXT_PUBLIC_APP_URL`: set to the final Vercel production domain (or custom domain `motorsphere.co.za`)
 - PayFast webhook URLs (Base 9+): must use the final Vercel production domain — not a preview URL
-- `netlify.toml` is archived (historical only) — do NOT reactivate
 - `apphosting.yaml` is committed but deferred (Firebase App Hosting — not active)
 
 ## What Not To Do
@@ -225,5 +224,3 @@ Emulator toggle: `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` in `.env.local`
 - ❌ Do NOT add `tailwind.config.ts` (Tailwind v4 is CSS-first)
 - ❌ Do NOT add light mode variants at MVP (dark theme only)
 - ❌ Do NOT skip emulator testing for Security Rules changes
-- ❌ Do NOT re-enable `netlify.toml` — Netlify is no longer the active host
-- ❌ Do NOT install `@netlify/plugin-nextjs` — removed from devDependencies

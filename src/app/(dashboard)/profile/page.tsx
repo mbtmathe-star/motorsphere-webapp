@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { updateUserProfile } from '@/lib/firebase/users';
 import type { AccountType } from '@/types/firestore.types';
@@ -21,21 +21,13 @@ export default function ProfilePage() {
   const [saved,  setSaved]  = useState(false);
   const [error,  setError]  = useState<string | null>(null);
 
-  // Form fields — pre-filled from Firestore profile
-  const [displayName, setDisplayName] = useState('');
-  const [phone,       setPhone]       = useState('');
-  const [city,        setCity]        = useState('');
-  const [bio,         setBio]         = useState('');
-
-  // Pre-fill form when profile loads
-  useEffect(() => {
-    if (profile) {
-      setDisplayName(profile.displayName ?? '');
-      setPhone(profile.phone ?? '');
-      setCity(profile.province ?? '');
-      setBio(profile.bio ?? '');
-    }
-  }, [profile]);
+  // Form fields — initialised from Firestore profile. Lazy initialisers run once at mount;
+  // profile is available by the time this page renders because the dashboard layout
+  // performs server-side session verification before the component tree mounts.
+  const [displayName, setDisplayName] = useState(() => profile?.displayName ?? '');
+  const [phone,       setPhone]       = useState(() => profile?.phone ?? '');
+  const [city,        setCity]        = useState(() => profile?.province ?? '');
+  const [bio,         setBio]         = useState(() => profile?.bio ?? '');
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

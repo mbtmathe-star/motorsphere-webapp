@@ -25,10 +25,15 @@ export default function SiteFooter() {
         <p className="text-white/[.82] text-sm m-0">is part of the local4u Group Of Companies</p>
         <nav className="flex flex-wrap gap-4 justify-center mt-4" aria-label="Footer links">
           {[
-            { label: 'Privacy', href: '/privacy' },
-            { label: 'Terms', href: '/terms' },
+            { label: 'About',          href: '/about' },
+            { label: 'Partnerships',   href: '/partnerships' },
+            { label: 'Advertise',      href: '/advertise' },
+            { label: 'Auctions',       href: '/auctions' },
+            { label: 'Insurance',      href: '/insurance' },
             { label: 'Trust & Safety', href: '/trust-safety' },
-            { label: 'Contact', href: '/contact' },
+            { label: 'Privacy',        href: '/privacy' },
+            { label: 'Terms',          href: '/terms' },
+            { label: 'Contact',        href: '/contact' },
           ].map(link => (
             <Link
               key={link.href}

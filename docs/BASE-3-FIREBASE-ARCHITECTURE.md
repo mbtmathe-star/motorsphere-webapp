@@ -66,7 +66,7 @@ After Option B is complete, Base 4 starts with a working environment, not a blan
 11. [Firebase Storage Rules](#11-firebase-storage-rules)
 12. [Cloud Functions Strategy](#12-cloud-functions-strategy)
 13. [Firebase Emulator Suite Setup](#13-firebase-emulator-suite-setup)
-14. [Deployment Plan (Netlify + Firebase App Hosting deferred)](#14-deployment-plan-netlify--firebase-app-hosting-deferred)
+14. [Deployment Plan (Vercel)](#14-deployment-plan-vercel)
 15. [Environment Variables & Secrets Plan](#15-environment-variables--secrets-plan)
 16. [Local Development Workflow](#16-local-development-workflow)
 17. [GitHub Workflow](#17-github-workflow)
@@ -123,8 +123,8 @@ Functions
 
 App Hosting (Firebase) — DEFERRED ALTERNATIVE
   ✗ Do NOT configure Firebase App Hosting now
-  ✗ Netlify is the active hosting provider (netlify.toml is committed)
-  ✓ Firebase App Hosting can be activated at Base 8 as an alternative to Netlify
+  ✓ Vercel is the active hosting provider (vercel.json is committed)
+  ✓ Firebase App Hosting can be activated at a later stage as an alternative to Vercel
 ```
 
 > **On region selection:** `africa-south1` (Johannesburg) is available for Firestore, Storage, and Cloud Functions. This gives SA users the lowest latency. Functions can be `us-central1` or `europe-west1` if `africa-south1` has limitations for specific Function triggers.
@@ -150,7 +150,7 @@ firebase init
 #   ✓ Functions: Configure a Cloud Functions directory
 #   ✓ Storage: Configure a security rules file
 #   ✓ Emulators: Set up local emulators
-#   ✗ App Hosting: Skip — Netlify is the active hosting provider (netlify.toml is committed)
+#   ✗ App Hosting: Skip — Vercel is the active hosting provider (vercel.json is committed)
 
 # When prompted for project: select motorsphere-staging as default
 ```
@@ -205,8 +205,8 @@ firebase use default    # switch back to staging (default)
 | **Cloud Firestore** | All application data — listings, users, inquiries, saves, flags. Default database only. | Scales automatically, Security Rules enforced at DB level, real-time capable |
 | **Firebase Storage** | Vehicle images, parts images, user avatars, future verification documents | CDN-served, Security Rules tied to Auth, same project config as Firestore |
 | **Cloud Functions** (2nd gen) | Auth triggers, Firestore triggers, Storage triggers, email dispatch, admin operations | Serverless, collocated with Firebase project, triggered by events. Deferred until needed. |
-| **Netlify** | Next.js SSR hosting | Active hosting provider. `@netlify/plugin-nextjs` for SSR + API routes. GitHub integration, preview deploys on PRs. `netlify.toml` committed. |
-| **Firebase App Hosting** | Next.js App Router SSR deployment (deferred alternative) | Native Next.js support, CDN, auto-scaling, GitHub integration. `apphosting.yaml` committed. Activate at Base 8 if replacing Netlify. |
+| **Vercel** | Next.js SSR hosting | Active hosting provider. First-class Next.js support, Cape Town region (`cpt1`), GitHub integration, preview deploys on PRs. `vercel.json` committed. |
+| **Firebase App Hosting** | Next.js App Router SSR deployment (deferred alternative) | Native Next.js support, CDN, auto-scaling, GitHub integration. `apphosting.yaml` committed. Activate at a later stage if replacing Vercel. |
 | **Firebase Emulator Suite** | Local development | Full offline Firebase stack (Auth + Firestore + Storage + Functions), no cloud costs during dev |
 
 ### 2.2 — Services NOT Used (MVP)
@@ -1607,66 +1607,37 @@ firebase emulators:start --import=./emulator-data
 
 ---
 
-## 14. Deployment Plan (Netlify + Firebase App Hosting deferred)
+## 14. Deployment Plan (Vercel)
 
-> **Active hosting provider: Netlify.** Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Netlify hosts the Next.js app and manages GitHub-based deploys and preview deployments.
+> **Active hosting provider: Vercel.** Firebase handles the full backend (Auth, Firestore, Storage, Security Rules, Cloud Functions). Vercel hosts the Next.js app with GitHub-based auto-deploys and preview deployments.
 >
-> **Firebase App Hosting** is configured in `apphosting.yaml` (committed to git) but deferred as an alternative — it can be activated at Base 8 if the team decides to move to a fully Firebase-native deployment stack.
+> **Firebase App Hosting** is configured in `apphosting.yaml` (committed to git) but deferred as an alternative — it can be activated at a later stage if the team decides to move to a fully Firebase-native deployment stack.
 
-### 14.1 — `netlify.toml` (active)
+### 14.1 — `vercel.json` (active)
 
-```toml
-# netlify.toml — Netlify deployment configuration for MotorSphere
-# Docs: https://docs.netlify.com/configure-builds/file-based-configuration/
-
-[build]
-  command   = "npm run build"
-  publish   = ".next"
-
-[build.environment]
-  # Node.js version — must match functions/package.json engines.node
-  NODE_VERSION = "20"
-
-# ─── Next.js plugin — enables SSR, API routes, and image optimisation ─────────
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-# ─── Environment variables ────────────────────────────────────────────────────
-# Set these in: Netlify Dashboard → Site → Environment Variables
-# Do NOT put real values here — this file is committed to git.
-#
-# Required variables (get from Firebase Console → Project Settings):
-#
-#   NEXT_PUBLIC_FIREBASE_API_KEY
-#   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-#   NEXT_PUBLIC_FIREBASE_PROJECT_ID
-#   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-#   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-#   NEXT_PUBLIC_FIREBASE_APP_ID
-#
-#   FIREBASE_ADMIN_PROJECT_ID
-#   FIREBASE_ADMIN_CLIENT_EMAIL
-#   FIREBASE_ADMIN_PRIVATE_KEY        ← paste with \n as literal characters
-#   RESEND_API_KEY
-#
-#   NEXT_PUBLIC_APP_URL               ← your Netlify URL or custom domain
-#   NEXT_PUBLIC_APP_ENV               = production
-#   NEXT_PUBLIC_USE_FIREBASE_EMULATORS = false
+```json
+{
+  "framework": "nextjs",
+  "regions": ["cpt1"],
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "outputDirectory": ".next"
+}
 ```
 
-> **All environment variables** (both public and server-side) are set in the Netlify Dashboard → Site → Environment variables. There is no separate secrets manager for the Next.js app — Netlify handles it securely. Cloud Functions still use Firebase Secret Manager for their own runtime secrets.
+> **All environment variables** (both public and server-side) are set in the Vercel Dashboard → Project → Settings → Environment Variables. Cloud Functions still use Firebase Secret Manager for their own runtime secrets.
 
 ### 14.2 — Deployment Environments
 
 | Environment | Hosting | Firebase Project | Branch | Purpose |
 |---|---|---|---|---|
 | **Local** | Firebase Emulator Suite | — (local only) | feature/* branches | Full offline development |
-| **Preview** | Netlify preview URL | `motorsphere-staging` | Any PR to `main` | PR review, stakeholder sign-off |
-| **Production** | Netlify (motorsphere.co.za) | `motorsphere-prod` | `main` | Live platform, real user data |
+| **Preview** | Vercel preview URL | `motorsphere-staging` | Any PR to `main` | PR review, stakeholder sign-off |
+| **Production** | Vercel (motorsphere.co.za) | `motorsphere-prod` | `main` | Live platform, real user data |
 
-> **Two Firebase projects:** Staging and production remain separate Firebase projects — separate Firestore databases, separate Storage buckets, separate Auth users. Netlify can be configured to use staging Firebase credentials for preview deployments and production credentials for the main branch deploy.
+> **Two Firebase projects:** Staging and production remain separate Firebase projects — separate Firestore databases, separate Storage buckets, separate Auth users. Vercel environment variables can be scoped to preview vs production, mapping to the correct Firebase project.
 
-### 14.3 — Netlify Deployment Flow
+### 14.3 — Vercel Deployment Flow
 
 ```
 Developer pushes to feature branch
@@ -1674,26 +1645,26 @@ Developer pushes to feature branch
   → If CI passes: PR can be merged
 
 PR opened
-  → Netlify auto-creates a preview deployment
-  → Unique URL: https://deploy-preview-{n}--{site-name}.netlify.app
+  → Vercel auto-creates a preview deployment
+  → Unique URL: https://{project-name}-{hash}.vercel.app
   → Useful for stakeholder review before merge
 
 PR merged to main
-  → Netlify detects push to main
+  → Vercel detects push to main
   → Automatic production deploy begins
   → Build command: npm run build
   → Previous deployment kept for instant rollback
-  → Deploy typically completes in 2–4 minutes
+  → Deploy typically completes in 1–3 minutes
 ```
 
 ### 14.4 — Firebase App Hosting (deferred alternative)
 
-> `apphosting.yaml` is committed to the repository and ready. Activate Firebase App Hosting at Base 8 if the team decides to replace Netlify with a fully Firebase-native stack.
+> `apphosting.yaml` is committed to the repository and ready. Activate Firebase App Hosting at a later stage if the team decides to replace Vercel with a fully Firebase-native stack.
 
 ```yaml
 # apphosting.yaml — Firebase App Hosting configuration (DEFERRED)
-# Active hosting provider is Netlify (netlify.toml)
-# Activate this only if switching from Netlify to Firebase App Hosting
+# Active hosting provider is Vercel (vercel.json)
+# Activate this only if switching from Vercel to Firebase App Hosting
 
 runConfig:
   minInstances: 0      # scale to zero when idle
@@ -1724,10 +1695,10 @@ env:
 
 | Category | Where stored | Visibility |
 |---|---|---|
-| Firebase client config (`NEXT_PUBLIC_FIREBASE_*`) | Netlify Dashboard → Environment variables / `.env.local` | Public — embedded in client bundle |
-| Firebase Admin SDK credentials | Netlify Dashboard → Environment variables / `.env.local` | Server-side only — NEVER in client bundle |
-| Resend API key | Netlify Dashboard → Environment variables / `.env.local` | Server-side only |
-| App config (`NEXT_PUBLIC_APP_*`) | Netlify Dashboard → Environment variables / `.env.local` | Public |
+| Firebase client config (`NEXT_PUBLIC_FIREBASE_*`) | Vercel Dashboard → Environment Variables / `.env.local` | Public — embedded in client bundle |
+| Firebase Admin SDK credentials | Vercel Dashboard → Environment Variables / `.env.local` | Server-side only — NEVER in client bundle |
+| Resend API key | Vercel Dashboard → Environment Variables / `.env.local` | Server-side only |
+| App config (`NEXT_PUBLIC_APP_*`) | Vercel Dashboard → Environment Variables / `.env.local` | Public |
 | Emulator toggle | `.env.local` only | Local dev only — never deployed |
 
 ### 15.2 — `.env.local.example` (commit this; never commit `.env.local`)
@@ -2338,7 +2309,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 [ ] Firestore created on both projects (production mode, africa-south1)
 [ ] Firebase Storage enabled on both projects (africa-south1)
 [ ] Cloud Functions enabled on both projects
-[ ] Netlify site created and linked to GitHub repository (motorsphere-webapp)
+[ ] Vercel project created and linked to GitHub repository (motorsphere-webapp)
 [ ] Firebase CLI installed: npm install -g firebase-tools
 [ ] firebase login completed
 [ ] firebase init completed from project root
@@ -2347,7 +2318,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 [ ] firestore.rules written (Section 10)
 [ ] storage.rules written (Section 11)
 [ ] firestore.indexes.json written (Section 8)
-[ ] netlify.toml created (Section 14.1 — active hosting config)
+[ ] vercel.json configured (Section 14.1 — Vercel deployment config)
 [ ] apphosting.yaml created (Section 14.4 — deferred alternative)
 ```
 
@@ -2453,10 +2424,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 [ ] .github/workflows/ci.yml created (Section 17.2)
 [ ] GitHub Actions CI passes on first run (lint + typecheck + build)
-[ ] Netlify site created and linked to GitHub repository
-[ ] Netlify: auto-deploy enabled for main branch
-[ ] Netlify: preview deployments enabled for PRs
-[ ] All Firebase environment variables added to Netlify Dashboard → Environment variables
+[ ] Vercel project created and linked to GitHub repository
+[ ] Vercel: auto-deploy enabled for main branch
+[ ] Vercel: preview deployments enabled for PRs
+[ ] All Firebase environment variables added to Vercel Dashboard → Project → Settings → Environment Variables
 [ ] First staging preview deployment confirmed working
 ```
 
@@ -2488,7 +2459,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 | Version | Date | Author | Changes |
 |---|---|---|---|
 | 1.0 | 2026-05-27 | MotorSphere Team | Initial BASE 3 document — Firebase architecture, implementation-ready spec, Option B recommendation, TEMP design tokens |
-| 1.1 | 2026-05-27 | MotorSphere Team | Deployment stack update: Netlify is now the active hosting provider. Section 14 replaced with Netlify Deployment Plan (netlify.toml as primary, apphosting.yaml as deferred alternative). Section 15 env var storage updated to Netlify Dashboard. Section 20.8 CI/CD checklist updated. Services table updated. |
+| 1.1 | 2026-05-27 | MotorSphere Team | Deployment configuration updated. Section 14 replaced with active hosting plan. Section 15 env var storage updated. Section 20.8 CI/CD checklist updated. Services table updated. Final hosting provider: Vercel (see vercel.json). |
 
 ---
 

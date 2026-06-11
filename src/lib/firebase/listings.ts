@@ -186,8 +186,7 @@ export function subscribePendingListings(
       const listings = snap.docs.map(d => ({ ...d.data(), id: d.id }) as ListingDoc);
       callback(listings);
     },
-    _err => {
-      // Expected to fail for non-admin users — swallow silently
+    () => {
       callback([]);
     },
   );

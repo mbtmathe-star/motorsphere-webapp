@@ -28,7 +28,7 @@ function VerificationStatusBadge({ status }: { status: string | undefined }) {
 
 export default function SellerDashboardPage() {
   const { user, profile }   = useAuth();
-  const { listings, loading, draftCount, pendingCount, activeCount } = useMyListings();
+  const { listings, loading, pendingCount, activeCount } = useMyListings();
   if (!user) return null;
 
   const canSubmit        = canSubmitListing(profile);
@@ -94,7 +94,7 @@ export default function SellerDashboardPage() {
       {/* Seller accountability */}
       <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-xs text-gray-500">
         <p className="font-black text-gray-700 mb-1">Seller accountability</p>
-        Listings require admin approval before going live. MotorSphere verifies sellers to protect buyers and maintain marketplace trust. All data handled in accordance with POPIA.
+        Listings require admin approval before going live. MotorSphere verifies sellers to protect buyers and maintain ecosystem trust. You are part of South Africa&rsquo;s complete automotive ecosystem — buyers, dealers, parts vendors and service providers, all on one platform. All data handled in accordance with POPIA.
       </div>
 
       <PackageCard />
